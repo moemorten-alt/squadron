@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #f6fafe;
+    color: #1a0637;
+    @apply antialiased;
+  }
+}
+
+@layer components {
+  /* Papirfly-style card shadow for white containers */
+  .card {
+    box-shadow: 0 2px 12px rgba(43, 10, 91, 0.08);
+  }
+}

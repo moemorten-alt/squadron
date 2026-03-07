@@ -1,0 +1,6 @@
+#FileLock
+#Sat Mar 07 09:46:31 CET 2026
+hostName=192.168.0.15
+id=19cc77a0eaa78d663c1f96aa3994a88ce898cbbb47d
+method=file
+server=192.168.0.15\:55903
