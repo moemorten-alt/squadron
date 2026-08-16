@@ -33,7 +33,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        String username = jwtUtil.extractUsername(token);
+        String username;
+        try {
+            username = jwtUtil.extractUsername(token);
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+            // Malformed, tampered, expired, or blank token - treat request as unauthenticated
+            // rather than letting the exception propagate into a 500. jjwt throws
+            // IllegalArgumentException (not JwtException) for a blank/empty token, e.g.
+            // "Authorization: Bearer " with no token following - hence catching both.
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);

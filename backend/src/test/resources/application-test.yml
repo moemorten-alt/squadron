@@ -1,34 +1,33 @@
 spring:
   datasource:
-    url: jdbc:h2:file:./data/squadron;${squadron.h2.compat-params};AUTO_SERVER=TRUE
+    url: jdbc:h2:mem:squadron-test;${squadron.h2.compat-params}
     username: sa
     password:
     driver-class-name: org.h2.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         # Hibernate's auto-detection picks the wrong dialect when MODE=PostgreSQL is
         # in the JDBC URL (generates unsupported "insert ... returning id" syntax
         # against H2), so this must stay explicit despite the deprecation warning.
         dialect: org.hibernate.dialect.H2Dialect
-    defer-datasource-initialization: true   # Hibernate schema first, then data.sql
 
   flyway:
     enabled: false
 
   sql:
     init:
-      mode: never   # LocalDataInitializer handles seeding via ResourceDatabasePopulator
+      mode: never
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+security:
+  jwt:
+    secret: dGVzdE9ubHlTZWNyZXRLZXlGb3JTcHJpbmdCb290VGVzdHNOb3RSZWFs
+    expiration-ms: 60000
 
 logging:
   level:
-    com.squadron: DEBUG
-    org.hibernate.SQL: DEBUG
+    com.squadron: WARN
+    org.hibernate.SQL: WARN
