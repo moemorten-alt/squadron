@@ -3,8 +3,9 @@ package com.squadron.security;
 import com.squadron.entity.AppUser;
 import com.squadron.entity.UserRole;
 import com.squadron.repository.AppUserRepository;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SecurityIntegrationTest {
 
     @Autowired
@@ -46,7 +48,11 @@ class SecurityIntegrationTest {
     private String adminToken;
     private String viewerToken;
 
-    @BeforeEach
+    // None of these tests exercise password verification (that only happens via the
+    // /api/auth/login flow, not covered here - tokens are minted directly via
+    // JwtUtil), so fixture users only need to be created once per class rather than
+    // re-hashed with bcrypt before every test method.
+    @BeforeAll
     void setUp() {
         appUserRepository.deleteAll();
 
@@ -114,6 +120,15 @@ class SecurityIntegrationTest {
         // uncaught, turning any bad Authorization header into a 500 instead of
         // a clean auth rejection.
         mockMvc.perform(get("/api/persons").header("Authorization", "Bearer " + adminToken + "tampered"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void blankToken_isTreatedAsUnauthenticated_notA500() throws Exception {
+        // Regression guard: jjwt throws IllegalArgumentException (not JwtException)
+        // for a blank/empty token - "Authorization: Bearer " with nothing after it.
+        // JwtAuthFilter must catch this too, not just JwtException.
+        mockMvc.perform(get("/api/persons").header("Authorization", "Bearer "))
                 .andExpect(status().isForbidden());
     }
 }

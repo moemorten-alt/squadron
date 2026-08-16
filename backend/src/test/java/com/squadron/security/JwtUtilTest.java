@@ -19,7 +19,10 @@ class JwtUtilTest {
 
     private JwtUtil jwtUtil;
 
-    // 256-bit base64 key, same shape as the dev default in application.yml
+    // Intentionally an exact copy of the dev-default secret in application.yml (the
+    // signing algorithm doesn't care what the key is, so this is arbitrary) - if that
+    // default is ever rotated, there's no functional need to update this too, but keep
+    // this comment in sync so a reader doesn't assume the two are meant to diverge.
     private static final String TEST_SECRET = "c3F1YWRyb25TZWNyZXRLZXlGb3JEZXZPbmx5LU5vdEZvclByb2R1Y3Rpb24h";
 
     @BeforeEach

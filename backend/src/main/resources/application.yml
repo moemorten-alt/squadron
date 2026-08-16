@@ -1,3 +1,9 @@
+# Shared across the H2-based profiles (local, test) so they don't each hardcode
+# their own copy of the H2-as-Postgres compatibility flags.
+squadron:
+  h2:
+    compat-params: MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+
 spring:
   application:
     name: squadron-api

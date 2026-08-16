@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:squadron-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    url: jdbc:h2:mem:squadron-test;${squadron.h2.compat-params}
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -10,6 +10,9 @@ spring:
       ddl-auto: create-drop
     properties:
       hibernate:
+        # Hibernate's auto-detection picks the wrong dialect when MODE=PostgreSQL is
+        # in the JDBC URL (generates unsupported "insert ... returning id" syntax
+        # against H2), so this must stay explicit despite the deprecation warning.
         dialect: org.hibernate.dialect.H2Dialect
 
   flyway:

@@ -28,6 +28,10 @@ jobs:
         with:
           name: jacoco-report
           path: backend/target/site/jacoco/
+          # jacoco:report is bound to the same Maven phase as the tests, so a test
+          # failure aborts the build before the report is generated. Don't let a
+          # missing report add a second, unrelated failure on top of the real one.
+          if-no-files-found: ignore
 
   frontend-tests:
     name: Frontend tests
