@@ -25,7 +25,7 @@ public class PersonService {
     private final TagRepository tagRepository;
 
     @Transactional(readOnly = true)
-    public List<PersonDto> findAll(boolean isAdmin) {
+    public List<PersonDto> findAll(boolean isAdmin, Integer maxAllocation) {
         return personRepository.findAllActiveWithTags().stream()
                 .map(p -> {
                     List<AllocationDto> allocations = allocationRepository.findActiveByPersonId(p.getId()).stream()
@@ -34,6 +34,9 @@ public class PersonService {
                     Integer total = allocationRepository.sumAllocationPercentByPersonId(p.getId());
                     return PersonDto.from(p, isAdmin, allocations, total);
                 })
+                .filter(dto -> maxAllocation == null
+                        || dto.totalAllocation() == null
+                        || dto.totalAllocation() <= maxAllocation)
                 .toList();
     }
 

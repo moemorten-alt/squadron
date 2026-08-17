@@ -21,8 +21,9 @@ public class PersonController {
     private final PersonService personService;
 
     @GetMapping
-    public ResponseEntity<List<PersonDto>> list(Authentication auth) {
-        return ResponseEntity.ok(personService.findAll(isAdmin(auth)));
+    public ResponseEntity<List<PersonDto>> list(Authentication auth,
+            @RequestParam(required = false) Integer maxAllocation) {
+        return ResponseEntity.ok(personService.findAll(isAdmin(auth), maxAllocation));
     }
 
     @GetMapping("/{id}")
