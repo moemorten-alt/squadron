@@ -23,10 +23,23 @@ public class AllocationService {
     private final TechnologyRepository technologyRepository;
 
     @Transactional(readOnly = true)
-    public List<AllocationDto> findAll(boolean isAdmin) {
+    public List<AllocationDto> findAll(boolean isAdmin, String personName, String squadName,
+            String technology, String role, Integer minPercent) {
         return allocationRepository.findAllActiveWithDetails().stream()
                 .map(a -> AllocationDto.from(a, isAdmin))
+                .filter(dto -> personName == null || containsIgnoreCase(dto.personName(), personName))
+                .filter(dto -> squadName == null || containsIgnoreCase(dto.squadName(), squadName))
+                .filter(dto -> technology == null
+                        || dto.technologies().stream().anyMatch(t -> containsIgnoreCase(t, technology)))
+                .filter(dto -> role == null
+                        || dto.roles().stream().anyMatch(r -> containsIgnoreCase(r, role)))
+                .filter(dto -> minPercent == null
+                        || (dto.allocationPercent() != null && dto.allocationPercent() >= minPercent))
                 .toList();
+    }
+
+    private static boolean containsIgnoreCase(String haystack, String needle) {
+        return haystack != null && haystack.toLowerCase().contains(needle.toLowerCase());
     }
 
     @Transactional

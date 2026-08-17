@@ -21,8 +21,14 @@ public class AllocationController {
     private final AllocationService allocationService;
 
     @GetMapping
-    public ResponseEntity<List<AllocationDto>> list(Authentication auth) {
-        return ResponseEntity.ok(allocationService.findAll(isAdmin(auth)));
+    public ResponseEntity<List<AllocationDto>> list(Authentication auth,
+            @RequestParam(required = false) String personName,
+            @RequestParam(required = false) String squadName,
+            @RequestParam(required = false) String technology,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) Integer minPercent) {
+        return ResponseEntity.ok(allocationService.findAll(
+                isAdmin(auth), personName, squadName, technology, role, minPercent));
     }
 
     @PostMapping

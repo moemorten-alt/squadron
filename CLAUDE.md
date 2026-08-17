@@ -6,9 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Squadron is a squad-allocation tracker: it tracks which people are allocated to which squads, at what percentage, with what roles/technologies. There are two user roles - `ADMIN` (full CRUD, can see/edit private `adminNote` fields) and `VIEWER` (read-only, admin fields hidden).
 
-The repo contains two independent applications with no shared build tooling or root-level package manager - always `cd` into the one you're working on:
+The repo contains independent applications with no shared build tooling or root-level package manager - always `cd` into the one you're working on:
 - `backend/` - Spring Boot 3.3.5 / Java 21 (Maven), package root `com.squadron`
 - `frontend/` - Next.js 15 (App Router) / React 18 / TypeScript, Tailwind CSS, TanStack Table, SWR
+- `mcp-server/` - Python MCP (`FastMCP`) server exposing squad/person/allocation tools to AI assistants; a thin REST client over `backend/`'s API, no direct DB access (see `mcp-server/README.md`)
 
 ## Commands
 
@@ -63,6 +64,14 @@ Standard layering: `controller/` -> `service/` -> `repository/` -> `entity/`, wi
 - `src/lib/api.ts` is the single fetch wrapper for the whole app - all backend calls go through the `api.*` object. It attaches the JWT from `localStorage` on every request and dispatches an `auth:expired` `CustomEvent` on a 401 response (consumed by `AuthContext` to force logout).
 - `src/context/`: `AuthContext` (session/token), `ThemeContext`, `ToastContext`.
 
+## MCP server (`mcp-server/`)
+
+Exposes `backend/`'s data to AI assistants (tools like `list_squads`, `get_person`, `search_allocations`, `find_available_people`, plus a few resources and staffing prompts). Registered in `.mcp.json` (repo root, mirrored in `mcp-server/.mcp.json`) as a stdio server - Claude Code launches it on demand, there's no separate process to start manually.
+
+- `search_allocations` and `find_available_people` filter server-side via query params on `GET /api/allocations` (`personName`/`squadName`/`technology`/`role`/`minPercent`, all case-insensitive substring match) and `GET /api/persons` (`maxAllocation`) - don't reintroduce client-side fetch-all-and-filter in `server.py` for these; extend the backend query params instead, matching the existing pattern in `AllocationService.findAll`/`PersonService.findAll`.
+- `squad_capacity_summary` and `person_allocation_summary` need no backend query params - `GET /api/squads`/`GET /api/persons` already return `totalAllocationPercent`/`totalAllocation` per item (computed via `AllocationRepository.sumAllocationPercentByPersonId` etc.); the Python tools just sort/format for display.
+- JSON field names match 1:1 with the Java DTOs (`personName`, `squadName`, `allocationPercent`, `totalHeadcount`, etc.) - `mcp-server/client.py`/`server.py` were originally written against a separate, uncommitted Python/FastAPI backend prototype (`backend-py/`, still not tracked in git) but happen to expose an identical route/field shape, so no remapping was needed when retargeting to the Java backend.
+
 ## CI
 
-`.github/workflows/ci.yml` runs `mvn test` (backend) and `npm test` (frontend) on push/PR to `main`. A Python backend migration is in progress in local development but is not yet tracked in this git repository, so there is no corresponding CI job for it.
+`.github/workflows/ci.yml` runs `mvn test` (backend) and `npm test` (frontend) on push/PR to `main`. There's no CI job for `mcp-server/` (thin wrapper, verified by hand against a running backend) or for `backend-py/` (an in-progress Python backend migration, not yet tracked in this git repository).
