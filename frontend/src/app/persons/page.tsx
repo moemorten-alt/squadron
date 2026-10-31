@@ -44,7 +44,6 @@ interface EditDraft {
   email: string;
   adminNote: string;
   tagIds: number[];
-  // preserve fields not shown in the inline editor
   leaverDate?: string;
   allocations: AllocationDraft[];
   removedAllocationIds: number[];
@@ -376,7 +375,26 @@ export default function PersonsPage() {
       header: 'Leaver',
       sortUndefined: 'last',
       cell: ({ row }) => {
-        const label = formatLeaverDate(row.original.leaverDate);
+        const person = row.original;
+        // Editable in place, like Note. Only admins can reach this branch: the
+        // pencil that sets editingId lives in the admin-only actions column, so
+        // the column stays read-only for VIEWERs while remaining visible to them.
+        if (editingId === person.id && editDraft) {
+          return (
+            <input
+              type="date"
+              value={editDraft.leaverDate ?? ''}
+              // Clearing the input must actually clear the stored date, so an
+              // empty string becomes undefined rather than '' - the payload omits
+              // the key and the server nulls the column.
+              onChange={e => setEditDraft(d => d ? { ...d, leaverDate: e.target.value || undefined } : d)}
+              onKeyDown={e => handleKeyDown(e, person.id)}
+              className="w-full min-w-[140px] border border-gray-300 dark:border-white/15 dark:bg-white/5 dark:text-white rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              title="Leave empty if they are still here. Future dates are fine."
+            />
+          );
+        }
+        const label = formatLeaverDate(person.leaverDate);
         return label
           ? <span className="text-xs whitespace-nowrap px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 dark:bg-white/10 dark:text-white/60 dark:border-white/15">{label}</span>
           : <span className="text-xs text-gray-300 dark:text-white/30">—</span>;
