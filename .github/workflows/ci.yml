@@ -50,3 +50,47 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
+
+  migration-check:
+    name: Flyway migrations match the entities
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: squadron
+          POSTGRES_PASSWORD: squadron
+          POSTGRES_DB: squadron
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      # Runs Flyway against real Postgres, then starts the context with
+      # ddl-auto=validate. If an entity has a field with no matching column -
+      # a forgotten migration - the context fails to start and this job fails.
+      # The local and test profiles cannot catch this: both build the schema
+      # with Hibernate and have Flyway disabled.
+      - name: Verify migrations satisfy the entity mappings
+        working-directory: backend
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/squadron
+          SPRING_DATASOURCE_USERNAME: squadron
+          SPRING_DATASOURCE_PASSWORD: squadron
+          SPRING_FLYWAY_ENABLED: 'true'
+          SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+          JWT_SECRET: c3F1YWRyb25TZWNyZXRLZXlGb3JEZXZPbmx5LU5vdEZvclByb2R1Y3Rpb24h
+        run: mvn -B spring-boot:run -Dspring-boot.run.arguments=--spring.main.web-application-type=none
