@@ -1,10 +1,18 @@
 package com.squadron.person;
 
+import com.squadron.entity.Allocation;
 import com.squadron.entity.AppUser;
+import com.squadron.entity.DeveloperRole;
 import com.squadron.entity.Person;
+import com.squadron.entity.Squad;
+import com.squadron.entity.Technology;
 import com.squadron.entity.UserRole;
+import com.squadron.repository.AllocationRepository;
 import com.squadron.repository.AppUserRepository;
+import com.squadron.repository.DeveloperRoleRepository;
 import com.squadron.repository.PersonRepository;
+import com.squadron.repository.SquadRepository;
+import com.squadron.repository.TechnologyRepository;
 import com.squadron.security.JwtUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,7 +28,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -37,6 +47,10 @@ class LeaverDateIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private AppUserRepository appUserRepository;
     @Autowired private PersonRepository personRepository;
+    @Autowired private SquadRepository squadRepository;
+    @Autowired private AllocationRepository allocationRepository;
+    @Autowired private DeveloperRoleRepository developerRoleRepository;
+    @Autowired private TechnologyRepository technologyRepository;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private JwtUtil jwtUtil;
 
@@ -176,5 +190,51 @@ class LeaverDateIntegrationTest {
                         .header("Authorization", "Bearer " + viewerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.leaverDate").doesNotExist());
+    }
+
+    @Test
+    void leaverStillAppearsInListAndStillCountsTowardCapacity() throws Exception {
+        // THE load-bearing decision of this feature: leaverDate records a fact and
+        // changes NO behaviour. A leaver keeps active = true, keeps their
+        // allocations, keeps counting toward capacity and stays in every list.
+        // The tempting "helpful" change is to filter leavers out of the people
+        // list or out of capacity totals - this test exists to fail loudly if
+        // anyone ever makes it.
+        Squad squad = squadRepository.save(Squad.builder()
+                .name("Capacity Squad").description("fixture").build());
+        DeveloperRole role = developerRoleRepository.save(
+                DeveloperRole.builder().name("Capacity Role").build());
+        Technology tech = technologyRepository.save(
+                Technology.builder().name("Capacity Tech").build());
+
+        Person leftLastMonth = personRepository.save(Person.builder()
+                .name("Already Left")
+                .active(true)                               // NOT coupled to leaverDate
+                .leaverDate(LocalDate.now().minusMonths(1)) // in the PAST
+                .build());
+
+        allocationRepository.save(Allocation.builder()
+                .person(leftLastMonth)
+                .squad(squad)
+                .roles(new HashSet<>(Set.of(role)))
+                .technologies(new HashSet<>(Set.of(tech)))
+                .allocationPercent(60)
+                .active(true)
+                .build());
+
+        String expectedLeaverDate = LocalDate.now().minusMonths(1).toString();
+
+        // Filter expressions yield a single-element list, which .value() unwraps.
+        mockMvc.perform(get("/api/persons")
+                        .header("Authorization", "Bearer " + viewerToken))
+                .andExpect(status().isOk())
+                // still in the list
+                .andExpect(jsonPath("$[?(@.name=='Already Left')]").exists())
+                .andExpect(jsonPath("$[?(@.name=='Already Left')].active").value(true))
+                // the fact is reported
+                .andExpect(jsonPath("$[?(@.name=='Already Left')].leaverDate")
+                        .value(expectedLeaverDate))
+                // and still counts toward capacity
+                .andExpect(jsonPath("$[?(@.name=='Already Left')].totalAllocation").value(60));
     }
 }

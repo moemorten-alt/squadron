@@ -77,7 +77,7 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                   )}
 
                   {formatLeaverDate(person.leaverDate) && (
-                    <span className="inline-flex items-center mt-1 ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 dark:bg-white/10 dark:text-white/60 dark:border-white/15">
+                    <span className={`inline-flex items-center mt-1 ${person.email ? 'ml-2' : ''} text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 dark:bg-white/10 dark:text-white/60 dark:border-white/15`}>
                       {formatLeaverDate(person.leaverDate)}
                     </span>
                   )}

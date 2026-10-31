@@ -44,9 +44,9 @@ export const api = {
   persons: {
     list: () => request<PersonDto[]>('/persons'),
     get:  (id: number) => request<PersonDto>(`/persons/${id}`),
-    create: (data: { name: string; email?: string; adminNote?: string; tagIds?: number[] }) =>
+    create: (data: { name: string; email?: string; adminNote?: string; tagIds?: number[]; leaverDate?: string }) =>
       request<PersonDto>('/persons', { method: 'POST', body: json(data) }),
-    update: (id: number, data: { name: string; email?: string; adminNote?: string; tagIds?: number[] }) =>
+    update: (id: number, data: { name: string; email?: string; adminNote?: string; tagIds?: number[]; leaverDate?: string }) =>
       request<PersonDto>(`/persons/${id}`, { method: 'PUT', body: json(data) }),
     deactivate: (id: number) =>
       request<void>(`/persons/${id}`, { method: 'DELETE' }),

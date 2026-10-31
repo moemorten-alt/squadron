@@ -44,6 +44,8 @@ interface EditDraft {
   email: string;
   adminNote: string;
   tagIds: number[];
+  // preserve fields not shown in the inline editor
+  leaverDate?: string;
   allocations: AllocationDraft[];
   removedAllocationIds: number[];
 }
@@ -81,7 +83,7 @@ export default function PersonsPage() {
       startDate: a.startDate,
       endDate: a.endDate,
     }));
-    setEditDraft({ name: person.name, email: person.email ?? '', adminNote: person.adminNote ?? '', tagIds, allocations, removedAllocationIds: [] });
+    setEditDraft({ name: person.name, email: person.email ?? '', adminNote: person.adminNote ?? '', tagIds, leaverDate: person.leaverDate, allocations, removedAllocationIds: [] });
     setEditingId(person.id);
   }
 
@@ -99,6 +101,9 @@ export default function PersonsPage() {
         email: editDraft.email.trim() || undefined,
         adminNote: editDraft.adminNote.trim() || undefined,
         tagIds: editDraft.tagIds,
+        // the Leaver column is read-only here; round-trip the stored value so
+        // PersonService.update (which assigns unconditionally) cannot erase it
+        leaverDate: editDraft.leaverDate,
       });
       await Promise.all(editDraft.removedAllocationIds.map(id => api.allocations.delete(id)));
       const activeAllocations = editDraft.allocations.filter(
