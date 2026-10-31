@@ -41,6 +41,7 @@ export interface PersonDto {
   name: string;
   email?: string;
   active: boolean;
+  leaverDate?: string;   // ISO date, omitted entirely when the person has not left
   tags: string[];
   adminNote?: string;
   totalAllocation: number;

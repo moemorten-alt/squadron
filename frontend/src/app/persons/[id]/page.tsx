@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppLayout from '@/components/layout/AppLayout';
 import { api } from '@/lib/api';
+import { formatLeaverDate } from '@/lib/formatLeaverDate';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { allocationBadgeClass, cn } from '@/lib/utils';
@@ -73,6 +74,12 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                       <Mail className="w-3.5 h-3.5" />
                       {person.email}
                     </a>
+                  )}
+
+                  {formatLeaverDate(person.leaverDate) && (
+                    <span className="inline-flex items-center mt-1 ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 dark:bg-white/10 dark:text-white/60 dark:border-white/15">
+                      {formatLeaverDate(person.leaverDate)}
+                    </span>
                   )}
 
                   {person.tags.length > 0 && (
