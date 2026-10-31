@@ -50,7 +50,7 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto">
-        <Link href="/persons" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-6">
+        <Link href="/persons" className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white mb-6">
           <ArrowLeft className="w-4 h-4" /> Back to People
         </Link>
 
@@ -59,17 +59,17 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
             <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
-        {error && <div className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">Failed to load person.</div>}
+        {error && <div className="text-red-600 bg-red-50 dark:bg-red-400/10 border border-red-200 dark:border-red-400/30 rounded-lg p-4">Failed to load person.</div>}
 
         {person && (
           <div className="space-y-6">
             {/* Header card */}
-            <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-[0_2px_12px_rgba(43,10,91,0.07)]">
+            <div className="bg-white dark:bg-brand-800 border border-gray-100 dark:border-white/10 rounded-xl p-6 shadow-[0_2px_12px_rgba(43,10,91,0.07)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-2xl font-semibold text-gray-900">{person.name}</h1>
+                  <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{person.name}</h1>
                   {person.email && (
-                    <a href={`mailto:${person.email}`} className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-700 mt-1 transition-colors">
+                    <a href={`mailto:${person.email}`} className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-white/50 hover:text-brand-700 mt-1 transition-colors">
                       <Mail className="w-3.5 h-3.5" />
                       {person.email}
                     </a>
@@ -78,7 +78,7 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                   {person.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-3">
                       {person.tags.map(tag => (
-                        <span key={tag} className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full font-medium">
+                        <span key={tag} className="text-xs bg-amber-50 dark:bg-amber-400/15 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-400/30 px-2.5 py-0.5 rounded-full font-medium">
                           {tag}
                         </span>
                       ))}
@@ -86,7 +86,7 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                   )}
 
                   {isAdmin && person.adminNote && (
-                    <div className="mt-3 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
+                    <div className="mt-3 text-sm text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10 border border-amber-200 rounded-lg px-4 py-2">
                       <span className="font-medium">Note: </span>{person.adminNote}
                     </div>
                   )}
@@ -100,24 +100,24 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                     <>
                       <button
                         onClick={() => setShowPersonForm(true)}
-                        className="p-1.5 text-gray-400 hover:text-brand-600 transition-colors rounded-lg hover:bg-gray-100"
+                        className="p-1.5 text-gray-400 dark:text-white/40 hover:text-brand-600 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/10"
                         title="Edit person"
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       {confirmDeletePerson ? (
-                        <span className="flex items-center gap-1.5 text-xs bg-white border border-red-200 rounded-lg px-2.5 py-1.5">
-                          <span className="text-gray-600">Remove person?</span>
+                        <span className="flex items-center gap-1.5 text-xs bg-white dark:bg-brand-800 border border-red-200 rounded-lg px-2.5 py-1.5">
+                          <span className="text-gray-600 dark:text-white/70">Remove person?</span>
                           <button
                             onClick={handleDeletePerson}
-                            className="text-red-600 font-semibold hover:underline"
+                            className="text-red-600 dark:text-red-400 font-semibold hover:underline"
                           >
                             Confirm
                           </button>
-                          <span className="text-gray-300">·</span>
+                          <span className="text-gray-300 dark:text-white/30">·</span>
                           <button
                             onClick={() => setConfirmDeletePerson(false)}
-                            className="text-gray-400 hover:text-gray-600"
+                            className="text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/80"
                           >
                             Cancel
                           </button>
@@ -125,7 +125,7 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                       ) : (
                         <button
                           onClick={() => setConfirmDeletePerson(true)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50"
+                          className="p-1.5 text-gray-400 dark:text-white/40 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-400/10"
                           title="Remove person"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -140,7 +140,7 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
             {/* Allocations */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="font-semibold text-gray-900">Squad allocations</h2>
+                <h2 className="font-semibold text-gray-900 dark:text-white">Squad allocations</h2>
                 {isAdmin && (
                   <button
                     onClick={() => { setEditAllocation(null); setShowForm(true); }}
@@ -151,37 +151,37 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                 )}
               </div>
 
-              <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(43,10,91,0.07)]">
+              <div className="bg-white dark:bg-brand-800 border border-gray-100 dark:border-white/10 rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(43,10,91,0.07)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-200 bg-gray-50">
-                      <th className="text-left px-5 py-3 font-medium text-gray-600">Squad</th>
-                      <th className="text-left px-5 py-3 font-medium text-gray-600">Roles</th>
-                      <th className="text-left px-5 py-3 font-medium text-gray-600">Technologies</th>
-                      <th className="text-left px-5 py-3 font-medium text-gray-600">Allocation</th>
-                      <th className="text-left px-5 py-3 font-medium text-gray-600">Notes</th>
+                    <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                      <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Squad</th>
+                      <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Roles</th>
+                      <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Technologies</th>
+                      <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Allocation</th>
+                      <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Notes</th>
                       {isAdmin && <th className="px-5 py-3" />}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-white/10">
                     {person.allocations.map(a => (
-                      <tr key={a.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                         <td className="px-5 py-3.5">
-                          <Link href={`/squads/${a.squadId}`} className="font-medium text-gray-900 hover:text-brand-700 transition-colors">
+                          <Link href={`/squads/${a.squadId}`} className="font-medium text-gray-900 dark:text-white hover:text-brand-700 transition-colors">
                             {a.squadName}
                           </Link>
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex flex-wrap gap-1">
                             {a.roles.map(r => (
-                              <span key={r} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{r}</span>
+                              <span key={r} className="text-xs bg-blue-50 dark:bg-blue-400/15 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">{r}</span>
                             ))}
                           </div>
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex flex-wrap gap-1">
                             {a.technologies.map(t => (
-                              <span key={t} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{t}</span>
+                              <span key={t} className="text-xs bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white/70 px-2 py-0.5 rounded-full">{t}</span>
                             ))}
                           </div>
                         </td>
@@ -190,13 +190,13 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                             {a.allocationPercent}%
                           </span>
                         </td>
-                        <td className="px-5 py-3.5 text-gray-500 max-w-xs">
+                        <td className="px-5 py-3.5 text-gray-500 dark:text-white/50 max-w-xs">
                           <div className="space-y-0.5">
                             {a.publicComment && <p className="text-xs">{a.publicComment}</p>}
                             {isAdmin && a.adminNote && (
-                              <p className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded">{a.adminNote}</p>
+                              <p className="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10 px-2 py-0.5 rounded">{a.adminNote}</p>
                             )}
-                            {a.endDate && <p className="text-xs text-red-600">Until {a.endDate}</p>}
+                            {a.endDate && <p className="text-xs text-red-600 dark:text-red-400">Until {a.endDate}</p>}
                           </div>
                         </td>
                         {isAdmin && (
@@ -204,7 +204,7 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                             <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => { setEditAllocation(a); setShowForm(true); }}
-                                className="text-xs text-gray-500 hover:text-brand-700 transition-colors"
+                                className="text-xs text-gray-500 dark:text-white/50 hover:text-brand-700 transition-colors"
                               >
                                 Edit
                               </button>
@@ -213,14 +213,14 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                                   <button
                                     onClick={() => handleDeleteAllocation(a)}
                                     disabled={deletingAllocationId === a.id}
-                                    className="text-red-600 font-medium hover:underline disabled:opacity-50"
+                                    className="text-red-600 dark:text-red-400 font-medium hover:underline disabled:opacity-50"
                                   >
                                     {deletingAllocationId === a.id ? '…' : 'Confirm'}
                                   </button>
-                                  <span className="text-gray-300">·</span>
+                                  <span className="text-gray-300 dark:text-white/30">·</span>
                                   <button
                                     onClick={() => setConfirmDeleteAllocationId(null)}
-                                    className="text-gray-400 hover:text-gray-600"
+                                    className="text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/80"
                                   >
                                     Cancel
                                   </button>
@@ -228,7 +228,7 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                               ) : (
                                 <button
                                   onClick={() => setConfirmDeleteAllocationId(a.id)}
-                                  className="text-xs text-gray-400 hover:text-red-600 transition-colors"
+                                  className="text-xs text-gray-400 dark:text-white/40 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                                 >
                                   Remove
                                 </button>
@@ -240,7 +240,7 @@ export default function PersonDetailPage({ params }: { params: Promise<{ id: str
                     ))}
                     {person.allocations.length === 0 && (
                       <tr>
-                        <td colSpan={isAdmin ? 6 : 5} className="px-5 py-8 text-center text-gray-400 text-sm">
+                        <td colSpan={isAdmin ? 6 : 5} className="px-5 py-8 text-center text-gray-400 dark:text-white/40 text-sm">
                           No allocations yet.
                         </td>
                       </tr>

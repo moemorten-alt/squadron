@@ -50,7 +50,7 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto">
-        <Link href="/squads" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-6">
+        <Link href="/squads" className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-white/50 hover:text-gray-900 dark:hover:text-white mb-6">
           <ArrowLeft className="w-4 h-4" /> Back to Squads
         </Link>
 
@@ -59,16 +59,16 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
             <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
-        {error && <div className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">Failed to load squad.</div>}
+        {error && <div className="text-red-600 bg-red-50 dark:bg-red-400/10 border border-red-200 dark:border-red-400/30 rounded-lg p-4">Failed to load squad.</div>}
 
         {squad && (
           <>
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">{squad.name}</h1>
-                {squad.description && <p className="text-sm text-gray-500 mt-1">{squad.description}</p>}
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{squad.name}</h1>
+                {squad.description && <p className="text-sm text-gray-500 dark:text-white/50 mt-1">{squad.description}</p>}
                 <div className="flex items-center gap-3 mt-2">
-                  <span className="text-sm text-gray-600">{squad.totalHeadcount} members</span>
+                  <span className="text-sm text-gray-600 dark:text-white/70">{squad.totalHeadcount} members</span>
                   {squad.totalHeadcount > 0 && (
                     <span className={cn('text-xs font-medium px-2 py-0.5 rounded-full', allocationBadgeClass(squad.totalAllocationPercent / Math.max(squad.totalHeadcount, 1)))}>
                       {Math.round(squad.totalAllocationPercent / Math.max(squad.totalHeadcount, 1))}% avg allocation
@@ -88,24 +88,24 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
                     </button>
                     <button
                       onClick={() => setShowSquadForm(true)}
-                      className="p-2 text-gray-400 hover:text-brand-600 transition-colors rounded-lg hover:bg-gray-100"
+                      className="p-2 text-gray-400 dark:text-white/40 hover:text-brand-600 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-white/10"
                       title="Edit squad"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
                     {confirmDeleteSquad ? (
-                      <span className="flex items-center gap-1.5 text-xs bg-white border border-red-200 rounded-lg px-2.5 py-1.5">
-                        <span className="text-gray-600">Delete squad?</span>
+                      <span className="flex items-center gap-1.5 text-xs bg-white dark:bg-brand-800 border border-red-200 rounded-lg px-2.5 py-1.5">
+                        <span className="text-gray-600 dark:text-white/70">Delete squad?</span>
                         <button
                           onClick={handleDeleteSquad}
-                          className="text-red-600 font-semibold hover:underline"
+                          className="text-red-600 dark:text-red-400 font-semibold hover:underline"
                         >
                           Confirm
                         </button>
-                        <span className="text-gray-300">·</span>
+                        <span className="text-gray-300 dark:text-white/30">·</span>
                         <button
                           onClick={() => setConfirmDeleteSquad(false)}
-                          className="text-gray-400 hover:text-gray-600"
+                          className="text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/80"
                         >
                           Cancel
                         </button>
@@ -113,7 +113,7 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
                     ) : (
                       <button
                         onClick={() => setConfirmDeleteSquad(true)}
-                        className="p-2 text-gray-400 hover:text-red-600 transition-colors rounded-lg hover:bg-red-50"
+                        className="p-2 text-gray-400 dark:text-white/40 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-400/10"
                         title="Delete squad"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -124,37 +124,37 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
 
-            <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(43,10,91,0.07)]">
+            <div className="bg-white dark:bg-brand-800 border border-gray-100 dark:border-white/10 rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(43,10,91,0.07)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="text-left px-5 py-3 font-medium text-gray-600">Person</th>
-                    <th className="text-left px-5 py-3 font-medium text-gray-600">Roles</th>
-                    <th className="text-left px-5 py-3 font-medium text-gray-600">Technologies</th>
-                    <th className="text-left px-5 py-3 font-medium text-gray-600">Allocation</th>
-                    <th className="text-left px-5 py-3 font-medium text-gray-600">Notes</th>
+                  <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                    <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Person</th>
+                    <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Roles</th>
+                    <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Technologies</th>
+                    <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Allocation</th>
+                    <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Notes</th>
                     {isAdmin && <th className="px-5 py-3" />}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-white/10">
                   {squad.allocations.map(a => (
-                    <tr key={a.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                       <td className="px-5 py-3.5">
-                        <Link href={`/persons/${a.personId}`} className="font-medium text-gray-900 hover:text-brand-700 transition-colors">
+                        <Link href={`/persons/${a.personId}`} className="font-medium text-gray-900 dark:text-white hover:text-brand-700 transition-colors">
                           {a.personName}
                         </Link>
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex flex-wrap gap-1">
                           {a.roles.map(r => (
-                            <span key={r} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{r}</span>
+                            <span key={r} className="text-xs bg-blue-50 dark:bg-blue-400/15 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">{r}</span>
                           ))}
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex flex-wrap gap-1">
                           {a.technologies.map(t => (
-                            <span key={t} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{t}</span>
+                            <span key={t} className="text-xs bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white/70 px-2 py-0.5 rounded-full">{t}</span>
                           ))}
                         </div>
                       </td>
@@ -163,13 +163,13 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
                           {a.allocationPercent}%
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-gray-500 max-w-xs">
+                      <td className="px-5 py-3.5 text-gray-500 dark:text-white/50 max-w-xs">
                         <div className="space-y-0.5">
                           {a.publicComment && <p className="text-xs">{a.publicComment}</p>}
                           {isAdmin && a.adminNote && (
-                            <p className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded">{a.adminNote}</p>
+                            <p className="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-400/10 px-2 py-0.5 rounded">{a.adminNote}</p>
                           )}
-                          {a.endDate && <p className="text-xs text-red-600">Until {a.endDate}</p>}
+                          {a.endDate && <p className="text-xs text-red-600 dark:text-red-400">Until {a.endDate}</p>}
                         </div>
                       </td>
                       {isAdmin && (
@@ -177,7 +177,7 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => { setEditAllocation(a); setShowForm(true); }}
-                              className="text-xs text-gray-500 hover:text-brand-700 transition-colors"
+                              className="text-xs text-gray-500 dark:text-white/50 hover:text-brand-700 transition-colors"
                             >
                               Edit
                             </button>
@@ -186,14 +186,14 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
                                 <button
                                   onClick={() => handleDeleteAllocation(a)}
                                   disabled={deletingAllocationId === a.id}
-                                  className="text-red-600 font-medium hover:underline disabled:opacity-50"
+                                  className="text-red-600 dark:text-red-400 font-medium hover:underline disabled:opacity-50"
                                 >
                                   {deletingAllocationId === a.id ? '…' : 'Confirm'}
                                 </button>
-                                <span className="text-gray-300">·</span>
+                                <span className="text-gray-300 dark:text-white/30">·</span>
                                 <button
                                   onClick={() => setConfirmDeleteAllocationId(null)}
-                                  className="text-gray-400 hover:text-gray-600"
+                                  className="text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/80"
                                 >
                                   Cancel
                                 </button>
@@ -201,7 +201,7 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
                             ) : (
                               <button
                                 onClick={() => setConfirmDeleteAllocationId(a.id)}
-                                className="text-xs text-gray-400 hover:text-red-600 transition-colors"
+                                className="text-xs text-gray-400 dark:text-white/40 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                               >
                                 Remove
                               </button>
@@ -213,7 +213,7 @@ export default function SquadDetailPage({ params }: { params: Promise<{ id: stri
                   ))}
                   {squad.allocations.length === 0 && (
                     <tr>
-                      <td colSpan={isAdmin ? 6 : 5} className="px-5 py-8 text-center text-gray-400 text-sm">
+                      <td colSpan={isAdmin ? 6 : 5} className="px-5 py-8 text-center text-gray-400 dark:text-white/40 text-sm">
                         No allocations yet.
                       </td>
                     </tr>

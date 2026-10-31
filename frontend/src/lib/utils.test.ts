@@ -18,23 +18,40 @@ describe('formatPercent', () => {
   });
 });
 
+// These assert the light-mode base classes only. The badge palette also carries
+// dark: variants, which are a styling concern - what matters here is which
+// bucket a given percentage lands in.
 describe('allocationBadgeClass', () => {
   it('returns the gray/idle class at 0%', () => {
-    expect(allocationBadgeClass(0)).toBe('bg-gray-100 text-gray-500');
+    expect(allocationBadgeClass(0)).toContain('bg-gray-100');
+    expect(allocationBadgeClass(0)).toContain('text-gray-500');
   });
 
   it('returns the yellow/under-allocated class below 80%', () => {
-    expect(allocationBadgeClass(1)).toBe('bg-yellow-100 text-yellow-800');
-    expect(allocationBadgeClass(79)).toBe('bg-yellow-100 text-yellow-800');
+    for (const p of [1, 79]) {
+      expect(allocationBadgeClass(p)).toContain('bg-yellow-100');
+      expect(allocationBadgeClass(p)).toContain('text-yellow-800');
+    }
   });
 
   it('returns the green/healthy class from 80% up to and including 100%', () => {
-    expect(allocationBadgeClass(80)).toBe('bg-green-100 text-green-800');
-    expect(allocationBadgeClass(100)).toBe('bg-green-100 text-green-800');
+    for (const p of [80, 100]) {
+      expect(allocationBadgeClass(p)).toContain('bg-green-100');
+      expect(allocationBadgeClass(p)).toContain('text-green-800');
+    }
   });
 
   it('returns the red/over-allocated class above 100%', () => {
-    expect(allocationBadgeClass(101)).toBe('bg-red-100 text-red-700');
-    expect(allocationBadgeClass(150)).toBe('bg-red-100 text-red-700');
+    for (const p of [101, 150]) {
+      expect(allocationBadgeClass(p)).toContain('bg-red-100');
+      expect(allocationBadgeClass(p)).toContain('text-red-700');
+    }
+  });
+
+  it('keeps the buckets mutually exclusive across the boundaries', () => {
+    expect(allocationBadgeClass(79)).not.toContain('green');
+    expect(allocationBadgeClass(80)).not.toContain('yellow');
+    expect(allocationBadgeClass(100)).not.toContain('red');
+    expect(allocationBadgeClass(101)).not.toContain('green');
   });
 });

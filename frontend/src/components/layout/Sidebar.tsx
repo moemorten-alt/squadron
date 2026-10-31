@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { LayoutGrid, Users, LogOut, Shield, UserCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const navItems = [
   { href: '/persons', label: 'People',  icon: Users },
@@ -17,13 +18,16 @@ export default function Sidebar() {
 
   return (
     <aside className="flex flex-col w-56 min-h-screen bg-brand-800 px-3 py-5 shrink-0">
-      {/* Logo */}
-      <Link href="/persons" className="flex items-center gap-2.5 px-2 mb-8">
-        <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
-          <span className="text-white font-bold text-sm">S</span>
-        </div>
-        <span className="font-semibold text-white text-lg tracking-tight">Squadron</span>
-      </Link>
+      {/* Header: logo + theme toggle */}
+      <div className="flex items-center justify-between px-2 mb-8">
+        <Link href="/persons" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+            <span className="text-white font-bold text-sm">S</span>
+          </div>
+          <span className="font-semibold text-white text-lg tracking-tight">Squadron</span>
+        </Link>
+        <ThemeToggle />
+      </div>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5">

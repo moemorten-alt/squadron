@@ -85,11 +85,11 @@ export default function AllocationForm({ initial, defaultPersonId, defaultSquadI
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 sticky top-0 bg-white">
-          <h2 className="font-semibold text-gray-900">{initial ? 'Edit allocation' : 'New allocation'}</h2>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-            <X className="w-4 h-4 text-gray-500" />
+      <div className="relative bg-white dark:bg-brand-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-white/10 sticky top-0 bg-white dark:bg-brand-800">
+          <h2 className="font-semibold text-gray-900 dark:text-white">{initial ? 'Edit allocation' : 'New allocation'}</h2>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors">
+            <X className="w-4 h-4 text-gray-500 dark:text-white/50" />
           </button>
         </div>
 
@@ -97,11 +97,11 @@ export default function AllocationForm({ initial, defaultPersonId, defaultSquadI
           {/* Person + Squad */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Person *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-1">Person *</label>
               <select
                 value={personId}
                 onChange={e => setPersonId(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-white/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 <option value={0}>Select…</option>
                 {persons?.sort((a, b) => a.name.localeCompare(b.name)).map(p => (
@@ -110,11 +110,11 @@ export default function AllocationForm({ initial, defaultPersonId, defaultSquadI
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Squad *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-1">Squad *</label>
               <select
                 value={squadId}
                 onChange={e => setSquadId(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-white/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 <option value={0}>Select…</option>
                 {squads?.sort((a, b) => a.name.localeCompare(b.name)).map(s => (
@@ -127,29 +127,29 @@ export default function AllocationForm({ initial, defaultPersonId, defaultSquadI
           {/* Allocation % */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Allocation % *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-1">Allocation % *</label>
               <input
                 type="number" min={0} max={100}
                 value={percent}
                 onChange={e => setPercent(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-white/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start date</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-1">Start date</label>
               <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-white/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End date</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-1">End date</label>
               <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                className="w-full px-3 py-2 border border-gray-300 dark:border-white/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
             </div>
           </div>
 
           {/* Roles */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Roles *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-2">Roles *</label>
             <div className="flex flex-wrap gap-2">
               {roles?.map(r => (
                 <button
@@ -158,7 +158,7 @@ export default function AllocationForm({ initial, defaultPersonId, defaultSquadI
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                     selectedRoles.has(r.id)
                       ? 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                      : 'bg-white dark:bg-white/5 text-gray-600 dark:text-white/70 border-gray-300 dark:border-white/15 hover:border-blue-400'
                   }`}
                 >
                   {r.name}
@@ -169,7 +169,7 @@ export default function AllocationForm({ initial, defaultPersonId, defaultSquadI
 
           {/* Technologies */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Technologies</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-2">Technologies</label>
             <div className="flex flex-wrap gap-2">
               {techs?.map(t => (
                 <button
@@ -178,7 +178,7 @@ export default function AllocationForm({ initial, defaultPersonId, defaultSquadI
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                     selectedTechs.has(t.id)
                       ? 'bg-gray-700 text-white border-gray-700'
-                      : 'bg-white text-gray-600 border-gray-300 hover:border-gray-500'
+                      : 'bg-white dark:bg-white/5 text-gray-600 dark:text-white/70 border-gray-300 dark:border-white/15 hover:border-gray-500 dark:hover:border-white/30'
                   }`}
                 >
                   {t.name}
@@ -189,33 +189,33 @@ export default function AllocationForm({ initial, defaultPersonId, defaultSquadI
 
           {/* Comments */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Public comment</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-1">Public comment</label>
             <textarea
               value={publicComment}
               onChange={e => setPublicComment(e.target.value)}
               rows={2}
               placeholder="Visible to all users…"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-white/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Admin note <span className="text-amber-600 font-normal">(admin only)</span>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-1">
+              Admin note <span className="text-amber-600 dark:text-amber-400 font-normal">(admin only)</span>
             </label>
             <textarea
               value={adminNote}
               onChange={e => setAdminNote(e.target.value)}
               rows={2}
               placeholder="Internal notes, not visible to viewers…"
-              className="w-full px-3 py-2 border border-amber-200 bg-amber-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+              className="w-full px-3 py-2 border border-amber-200 dark:border-amber-400/30 bg-amber-50 dark:bg-amber-400/10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
             />
           </div>
 
-          {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+          {error && <p className="text-sm text-red-600 bg-red-50 dark:bg-red-400/10 border border-red-200 dark:border-red-400/30 rounded-lg px-3 py-2">{error}</p>}
 
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              className="px-4 py-2 text-sm text-gray-700 dark:text-white/80 border border-gray-300 dark:border-white/15 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
               Cancel
             </button>
             <button type="submit" disabled={saving}

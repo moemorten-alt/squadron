@@ -50,8 +50,8 @@ export default function UsersPage() {
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Users</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage who can log in and their access level</p>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Users</h1>
+            <p className="text-sm text-gray-500 dark:text-white/50 mt-1">Manage who can log in and their access level</p>
           </div>
           <button
             onClick={() => { setEditUser(null); setShowForm(true); }}
@@ -66,30 +66,30 @@ export default function UsersPage() {
             <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
-        {error && <div className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">Failed to load users.</div>}
+        {error && <div className="text-red-600 bg-red-50 dark:bg-red-400/10 border border-red-200 dark:border-red-400/30 rounded-lg p-4">Failed to load users.</div>}
 
         {users && (
-          <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(43,10,91,0.07)]">
+          <div className="bg-white dark:bg-brand-800 border border-gray-100 dark:border-white/10 rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(43,10,91,0.07)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left px-5 py-3 font-medium text-gray-600">Email</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-600">Role</th>
-                  <th className="text-left px-5 py-3 font-medium text-gray-600">Status</th>
+                <tr className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                  <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Email</th>
+                  <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Role</th>
+                  <th className="text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70">Status</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-white/10">
                 {users.map(user => (
-                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-3.5 text-gray-900">{user.email}</td>
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                    <td className="px-5 py-3.5 text-gray-900 dark:text-white">{user.email}</td>
                     <td className="px-5 py-3.5">
                       {user.role === 'ADMIN' ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-white/10 border border-brand-200 dark:border-white/10 px-2 py-0.5 rounded-full">
                           <Shield className="w-3 h-3" /> Admin
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-white/70 bg-gray-100 dark:bg-white/10 px-2 py-0.5 rounded-full">
                           <Eye className="w-3 h-3" /> Viewer
                         </span>
                       )}
@@ -99,8 +99,8 @@ export default function UsersPage() {
                         onClick={() => handleToggleActive(user)}
                         className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors ${
                           user.active
-                            ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                            ? 'bg-green-50 text-green-700 hover:bg-green-100 dark:hover:bg-green-400/20'
+                            : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-white/50 hover:bg-gray-200'
                         }`}
                       >
                         {user.active ? 'Active' : 'Inactive'}
@@ -110,7 +110,7 @@ export default function UsersPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => { setEditUser(user); setShowForm(true); }}
-                          className="text-xs text-gray-500 hover:text-brand-700 transition-colors"
+                          className="text-xs text-gray-500 dark:text-white/50 hover:text-brand-700 transition-colors"
                         >
                           Edit
                         </button>
@@ -119,14 +119,14 @@ export default function UsersPage() {
                             <button
                               onClick={() => handleDelete(user)}
                               disabled={deletingId === user.id}
-                              className="text-red-600 font-medium hover:underline disabled:opacity-50"
+                              className="text-red-600 dark:text-red-400 font-medium hover:underline disabled:opacity-50"
                             >
                               {deletingId === user.id ? '…' : 'Confirm'}
                             </button>
-                            <span className="text-gray-300">·</span>
+                            <span className="text-gray-300 dark:text-white/30">·</span>
                             <button
                               onClick={() => setConfirmDeleteId(null)}
-                              className="text-gray-400 hover:text-gray-600"
+                              className="text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/80"
                             >
                               Cancel
                             </button>
@@ -135,7 +135,7 @@ export default function UsersPage() {
                           <button
                             onClick={() => setConfirmDeleteId(user.id)}
                             disabled={deletingId === user.id}
-                            className="text-xs text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                            className="text-xs text-gray-400 dark:text-white/40 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
                           >
                             {deletingId === user.id ? '…' : 'Delete'}
                           </button>
@@ -146,7 +146,7 @@ export default function UsersPage() {
                 ))}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-5 py-10 text-center text-gray-400 text-sm">No users yet.</td>
+                    <td colSpan={4} className="px-5 py-10 text-center text-gray-400 dark:text-white/40 text-sm">No users yet.</td>
                   </tr>
                 )}
               </tbody>
@@ -202,46 +202,46 @@ function UserForm({ initial, onClose, onSaved }: { initial: UserDto | null; onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="font-semibold text-gray-900">{initial ? 'Edit user' : 'New user'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+      <div className="bg-white dark:bg-brand-800 rounded-xl shadow-xl w-full max-w-md mx-4">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-white/10">
+          <h2 className="font-semibold text-gray-900 dark:text-white">{initial ? 'Edit user' : 'New user'}</h2>
+          <button onClick={onClose} className="text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/80"><X className="w-5 h-5" /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
           {error && (
-            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">{error}</div>
+            <div className="text-sm text-red-600 bg-red-50 dark:bg-red-400/10 border border-red-200 dark:border-red-400/30 rounded-lg px-4 py-2">{error}</div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-1">Email</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required={!initial}
               disabled={!!initial}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:bg-gray-50 disabled:text-gray-500"
+              className="w-full border border-gray-300 dark:border-white/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:bg-gray-50 dark:disabled:bg-white/5 disabled:text-gray-500 dark:disabled:text-white/40"
               placeholder="user@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password {initial && <span className="text-gray-400 font-normal">(leave blank to keep current)</span>}
+            <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-1">
+              Password {initial && <span className="text-gray-400 dark:text-white/40 font-normal">(leave blank to keep current)</span>}
             </label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required={!initial}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full border border-gray-300 dark:border-white/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder={initial ? '••••••••' : 'Minimum 6 characters'}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-2">Role</label>
             <div className="flex gap-2">
               {(['VIEWER', 'ADMIN'] as const).map(r => (
                 <button
@@ -251,7 +251,7 @@ function UserForm({ initial, onClose, onSaved }: { initial: UserDto | null; onCl
                   className={`flex-1 flex items-center justify-center gap-1.5 text-sm py-2 rounded-lg border font-medium transition-colors ${
                     role === r
                       ? 'bg-brand-600 text-white border-brand-600'
-                      : 'bg-white text-gray-600 border-gray-300 hover:border-brand-400'
+                      : 'bg-white dark:bg-white/5 text-gray-600 dark:text-white/70 border-gray-300 dark:border-white/15 hover:border-brand-400'
                   }`}
                 >
                   {r === 'ADMIN' ? <Shield className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -259,13 +259,13 @@ function UserForm({ initial, onClose, onSaved }: { initial: UserDto | null; onCl
                 </button>
               ))}
             </div>
-            <p className="text-xs text-gray-500 mt-1.5">
+            <p className="text-xs text-gray-500 dark:text-white/50 mt-1.5">
               {role === 'ADMIN' ? 'Full access: create, edit, delete, see private notes.' : 'Read-only access. Cannot see admin notes or tags.'}
             </p>
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">Cancel</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-600 dark:text-white/70 hover:text-gray-900 dark:hover:text-white">Cancel</button>
             <button
               type="submit"
               disabled={saving}

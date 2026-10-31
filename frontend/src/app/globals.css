@@ -6,7 +6,12 @@
   body {
     background-color: #f6fafe;
     color: #1a0637;
-    @apply antialiased;
+    @apply antialiased transition-colors duration-150;
+  }
+
+  .dark body {
+    background-color: #1a0637; /* brand-900 */
+    color: #f5f3fc;
   }
 }
 
@@ -14,5 +19,9 @@
   /* Papirfly-style card shadow for white containers */
   .card {
     box-shadow: 0 2px 12px rgba(43, 10, 91, 0.08);
+  }
+
+  .dark .card {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
   }
 }

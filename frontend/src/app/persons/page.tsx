@@ -187,7 +187,7 @@ export default function PersonsPage() {
                 value={editDraft.name}
                 onChange={e => setEditDraft(d => d ? { ...d, name: e.target.value } : d)}
                 onKeyDown={e => handleKeyDown(e, person.id)}
-                className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-gray-300 dark:border-white/15 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="Full name"
               />
               <input
@@ -195,7 +195,7 @@ export default function PersonsPage() {
                 value={editDraft.email}
                 onChange={e => setEditDraft(d => d ? { ...d, email: e.target.value } : d)}
                 onKeyDown={e => handleKeyDown(e, person.id)}
-                className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-gray-300 dark:border-white/15 rounded-md px-2 py-1 text-sm text-gray-500 dark:text-white/50 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="Email (optional)"
               />
             </div>
@@ -203,11 +203,11 @@ export default function PersonsPage() {
         }
         return (
           <div>
-            <Link href={`/persons/${person.id}`} className="font-medium text-gray-900 hover:text-brand-700 transition-colors">
+            <Link href={`/persons/${person.id}`} className="font-medium text-gray-900 dark:text-white hover:text-brand-700 transition-colors">
               {info.getValue()}
             </Link>
             {person.email && (
-              <div className="text-xs text-gray-400 mt-0.5">{person.email}</div>
+              <div className="text-xs text-gray-400 dark:text-white/40 mt-0.5">{person.email}</div>
             )}
           </div>
         );
@@ -227,7 +227,7 @@ export default function PersonsPage() {
             <div className="space-y-1.5 py-0.5">
               {activeAllocations.map(a => (
                 <div key={a.id} className="flex items-center gap-1.5">
-                  <span className="text-xs font-medium text-gray-700 flex-1 truncate">{a.squadName}</span>
+                  <span className="text-xs font-medium text-gray-700 dark:text-white/80 flex-1 truncate">{a.squadName}</span>
                   <input
                     type="number"
                     min={0}
@@ -235,12 +235,12 @@ export default function PersonsPage() {
                     value={a.percent}
                     onChange={e => updateAllocationPercent(a.id, Number(e.target.value))}
                     onKeyDown={e => handleKeyDown(e, person.id)}
-                    className="w-12 border border-gray-300 rounded px-1 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    className="w-12 border border-gray-300 dark:border-white/15 rounded px-1 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
                   />
-                  <span className="text-xs text-gray-400">%</span>
+                  <span className="text-xs text-gray-400 dark:text-white/40">%</span>
                   <button
                     onClick={() => removeAllocation(a.id)}
-                    className="text-gray-300 hover:text-red-500 p-0.5 transition-colors"
+                    className="text-gray-300 dark:text-white/30 hover:text-red-500 p-0.5 transition-colors"
                     title="Remove from squad"
                   >
                     <X className="w-3 h-3" />
@@ -248,7 +248,7 @@ export default function PersonsPage() {
                 </div>
               ))}
               {activeAllocations.length === 0 && (
-                <span className="text-xs text-gray-300 italic">No squads</span>
+                <span className="text-xs text-gray-300 dark:text-white/30 italic">No squads</span>
               )}
               <button
                 type="button"
@@ -256,7 +256,7 @@ export default function PersonsPage() {
                   cancelEdit();
                   setAddAllocationForPersonId(person.id);
                 }}
-                className="text-xs text-brand-600 hover:text-brand-700 hover:underline mt-0.5"
+                className="text-xs text-brand-600 dark:text-brand-300 hover:text-brand-700 dark:hover:text-brand-200 hover:underline mt-0.5"
               >
                 + Add squad
               </button>
@@ -266,8 +266,8 @@ export default function PersonsPage() {
         return (
           <div className="flex flex-wrap gap-1">
             {person.allocations.map(a => (
-              <Link key={a.id} href={`/squads/${a.squadId}`} className="text-xs bg-gray-100 text-gray-700 hover:bg-brand-50 hover:text-brand-700 px-2 py-0.5 rounded-full transition-colors">
-                {a.squadName} <span className="text-gray-400">{a.allocationPercent}%</span>
+              <Link key={a.id} href={`/squads/${a.squadId}`} className="text-xs bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-white/70 hover:bg-brand-50 hover:text-brand-700 px-2 py-0.5 rounded-full transition-colors">
+                {a.squadName} <span className="text-gray-400 dark:text-white/40">{a.allocationPercent}%</span>
               </Link>
             ))}
           </div>
@@ -284,7 +284,7 @@ export default function PersonsPage() {
         return (
           <div className="flex flex-wrap gap-1">
             {roles.map(r => (
-              <span key={r} className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">{r}</span>
+              <span key={r} className="text-xs bg-blue-50 dark:bg-blue-400/15 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">{r}</span>
             ))}
           </div>
         );
@@ -301,14 +301,14 @@ export default function PersonsPage() {
             a => !editDraft.removedAllocationIds.includes(a.id)
           );
           if (activeAllocations.length === 0) {
-            return <span className="text-xs text-gray-300 italic">—</span>;
+            return <span className="text-xs text-gray-300 dark:text-white/30 italic">—</span>;
           }
           return (
             <div className="space-y-2 py-0.5">
               {activeAllocations.map(a => (
                 <div key={a.id}>
                   {activeAllocations.length > 1 && (
-                    <div className="text-xs text-gray-400 mb-1">{a.squadName}</div>
+                    <div className="text-xs text-gray-400 dark:text-white/40 mb-1">{a.squadName}</div>
                   )}
                   <div className="flex flex-wrap gap-1">
                     {allTechnologies.map((tech: Technology) => (
@@ -319,7 +319,7 @@ export default function PersonsPage() {
                         className={`text-xs px-1.5 py-0.5 rounded-full border transition-colors ${
                           a.technologyIds.includes(tech.id)
                             ? 'bg-gray-700 border-gray-700 text-white'
-                            : 'bg-white border-gray-200 text-gray-400 hover:border-gray-400'
+                            : 'bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-400 dark:text-white/40 hover:border-gray-400 dark:hover:border-white/30'
                         }`}
                       >
                         {tech.name}
@@ -335,7 +335,7 @@ export default function PersonsPage() {
         return (
           <div className="flex flex-wrap gap-1">
             {techs.map(t => (
-              <span key={t} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{t}</span>
+              <span key={t} className="text-xs bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white/70 px-2 py-0.5 rounded-full">{t}</span>
             ))}
           </div>
         );
@@ -389,8 +389,8 @@ export default function PersonsPage() {
                     })}
                     className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
                       editDraft.tagIds.includes(tag.id)
-                        ? 'bg-amber-100 border-amber-400 text-amber-800'
-                        : 'bg-white border-gray-300 text-gray-500 hover:border-amber-300'
+                        ? 'bg-amber-100 dark:bg-amber-400/20 border-amber-400 dark:border-amber-400/50 text-amber-800 dark:text-amber-200'
+                        : 'bg-white dark:bg-white/5 border-gray-300 dark:border-white/15 text-gray-500 dark:text-white/50 hover:border-amber-300'
                     }`}
                   >
                     {tag.name}
@@ -402,7 +402,7 @@ export default function PersonsPage() {
           return (
             <div className="flex flex-wrap gap-1">
               {person.tags.map(t => (
-                <span key={t} className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">{t}</span>
+                <span key={t} className="text-xs bg-amber-50 dark:bg-amber-400/15 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-400/30 px-2 py-0.5 rounded-full">{t}</span>
               ))}
             </div>
           );
@@ -422,14 +422,14 @@ export default function PersonsPage() {
                 value={editDraft.adminNote}
                 onChange={e => setEditDraft(d => d ? { ...d, adminNote: e.target.value } : d)}
                 onKeyDown={e => handleKeyDown(e, person.id)}
-                className="w-full min-w-[120px] border border-amber-200 bg-amber-50 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full min-w-[120px] border border-amber-200 dark:border-amber-400/30 bg-amber-50 dark:bg-amber-400/10 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
                 placeholder="Admin note…"
               />
             );
           }
           return person.adminNote
-            ? <span className="text-xs text-amber-700 truncate max-w-[150px] block" title={person.adminNote}>{person.adminNote}</span>
-            : <span className="text-xs text-gray-300">—</span>;
+            ? <span className="text-xs text-amber-700 dark:text-amber-300 truncate max-w-[150px] block" title={person.adminNote}>{person.adminNote}</span>
+            : <span className="text-xs text-gray-300 dark:text-white/30">—</span>;
         },
       }),
 
@@ -445,7 +445,7 @@ export default function PersonsPage() {
                 <button
                   onClick={() => saveEdit(person.id)}
                   disabled={saving || !editDraft?.name.trim()}
-                  className="p-1 text-green-600 hover:text-green-700 disabled:opacity-40 transition-colors"
+                  className="p-1 text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 disabled:opacity-40 transition-colors"
                   title="Save (Enter)"
                 >
                   <Check className="w-4 h-4" />
@@ -453,7 +453,7 @@ export default function PersonsPage() {
                 <button
                   onClick={cancelEdit}
                   disabled={saving}
-                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="p-1 text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/80 transition-colors"
                   title="Cancel (Esc)"
                 >
                   <X className="w-4 h-4" />
@@ -465,7 +465,7 @@ export default function PersonsPage() {
             <div className="flex items-center justify-end gap-2">
               <button
                 onClick={() => startEdit(person)}
-                className="p-1 text-gray-400 hover:text-brand-600 transition-colors"
+                className="p-1 text-gray-400 dark:text-white/40 hover:text-brand-600 transition-colors"
                 title="Edit"
               >
                 <Pencil className="w-3.5 h-3.5" />
@@ -475,14 +475,14 @@ export default function PersonsPage() {
                   <button
                     onClick={() => handleDelete(person)}
                     disabled={deletingId === person.id}
-                    className="text-red-600 font-medium hover:underline disabled:opacity-50"
+                    className="text-red-600 dark:text-red-400 font-medium hover:underline disabled:opacity-50"
                   >
                     {deletingId === person.id ? '…' : 'Confirm'}
                   </button>
-                  <span className="text-gray-300">·</span>
+                  <span className="text-gray-300 dark:text-white/30">·</span>
                   <button
                     onClick={() => setConfirmDeleteId(null)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/80"
                   >
                     Cancel
                   </button>
@@ -491,7 +491,7 @@ export default function PersonsPage() {
                 <button
                   onClick={() => setConfirmDeleteId(person.id)}
                   disabled={deletingId === person.id}
-                  className="text-xs text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                  className="text-xs text-gray-400 dark:text-white/40 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
                 >
                   {deletingId === person.id ? '…' : 'Remove'}
                 </button>
@@ -533,8 +533,8 @@ export default function PersonsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">People</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">People</h1>
+            <p className="text-sm text-gray-500 dark:text-white/50 mt-1">
               {filtered.length} of {persons?.length ?? '—'} people
             </p>
           </div>
@@ -549,13 +549,13 @@ export default function PersonsPage() {
         </div>
 
         <div className="relative mb-5 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-white/40" />
           <input
             type="text"
             placeholder="Search by name, squad, tech, role…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-white/15 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
         </div>
 
@@ -564,14 +564,14 @@ export default function PersonsPage() {
             <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
-        {error && <div className="text-red-600 bg-red-50 border border-red-200 rounded-lg p-4">Failed to load people.</div>}
+        {error && <div className="text-red-600 bg-red-50 dark:bg-red-400/10 border border-red-200 dark:border-red-400/30 rounded-lg p-4">Failed to load people.</div>}
 
         {!isLoading && !error && (
-          <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(43,10,91,0.07)]">
+          <div className="bg-white dark:bg-brand-800 border border-gray-100 dark:border-white/10 rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(43,10,91,0.07)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
             <table className="w-full text-sm">
               <thead>
                 {table.getHeaderGroups().map(hg => (
-                  <tr key={hg.id} className="border-b border-gray-200 bg-gray-50">
+                  <tr key={hg.id} className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
                     {hg.headers.map(header => {
                       const canSort = header.column.getCanSort();
                       const sorted = header.column.getIsSorted();
@@ -579,15 +579,15 @@ export default function PersonsPage() {
                         <th
                           key={header.id}
                           className={cn(
-                            'text-left px-5 py-3 font-medium text-gray-600 select-none',
-                            canSort && 'cursor-pointer hover:text-gray-900'
+                            'text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70 select-none',
+                            canSort && 'cursor-pointer hover:text-gray-900 dark:hover:text-white'
                           )}
                           onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                         >
                           <span className="flex items-center gap-1">
                             {flexRender(header.column.columnDef.header, header.getContext())}
                             {canSort && (
-                              <span className="text-gray-400">
+                              <span className="text-gray-400 dark:text-white/40">
                                 {sorted === 'asc' ? ' ↑' : sorted === 'desc' ? ' ↓' : ' ↕'}
                               </span>
                             )}
@@ -598,13 +598,13 @@ export default function PersonsPage() {
                   </tr>
                 ))}
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-white/10">
                 {table.getRowModel().rows.map(row => {
                   const isEditing = editingId === row.original.id;
                   return (
                     <tr
                       key={row.id}
-                      className={cn('transition-colors', isEditing ? 'bg-blue-50/40' : 'hover:bg-gray-50')}
+                      className={cn('transition-colors', isEditing ? 'bg-blue-50/40 dark:bg-blue-400/10' : 'hover:bg-gray-50 dark:hover:bg-white/5')}
                     >
                       {row.getVisibleCells().map(cell => (
                         <td key={cell.id} className="px-5 py-3.5 align-top">
@@ -616,7 +616,7 @@ export default function PersonsPage() {
                 })}
                 {table.getRowModel().rows.length === 0 && (
                   <tr>
-                    <td colSpan={columns.length} className="px-5 py-10 text-center text-gray-400 text-sm">
+                    <td colSpan={columns.length} className="px-5 py-10 text-center text-gray-400 dark:text-white/40 text-sm">
                       No people match your search.
                     </td>
                   </tr>
