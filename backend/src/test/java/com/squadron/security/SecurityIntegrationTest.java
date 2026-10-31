@@ -3,10 +3,14 @@ package com.squadron.security;
 import com.squadron.entity.AppUser;
 import com.squadron.entity.UserRole;
 import com.squadron.repository.AppUserRepository;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -15,7 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import javax.crypto.SecretKey;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -44,6 +50,9 @@ class SecurityIntegrationTest {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Value("${security.jwt.secret}")
+    private String jwtSecret;
 
     private String adminToken;
     private String viewerToken;
@@ -76,12 +85,13 @@ class SecurityIntegrationTest {
     }
 
     @Test
-    void unauthenticatedRequest_toProtectedEndpoint_isRejected() throws Exception {
-        // No custom AuthenticationEntryPoint is configured, so Spring Security's
-        // default falls back to 403 (not 401) for anonymous requests too. This
-        // test pins that actual behavior down as a regression guard.
+    void unauthenticatedRequest_toProtectedEndpoint_returns401() throws Exception {
+        // SecurityConfig installs an AuthenticationEntryPoint so that *authentication*
+        // failures answer 401, leaving 403 to mean "authenticated but not permitted".
+        // The frontend relies on that split to tell an expired session (sign in again)
+        // apart from a VIEWER touching an admin-only action (stay signed in).
         mockMvc.perform(get("/api/persons"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -120,7 +130,7 @@ class SecurityIntegrationTest {
         // uncaught, turning any bad Authorization header into a 500 instead of
         // a clean auth rejection.
         mockMvc.perform(get("/api/persons").header("Authorization", "Bearer " + adminToken + "tampered"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -129,6 +139,38 @@ class SecurityIntegrationTest {
         // for a blank/empty token - "Authorization: Bearer " with nothing after it.
         // JwtAuthFilter must catch this too, not just JwtException.
         mockMvc.perform(get("/api/persons").header("Authorization", "Bearer "))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void expiredToken_returns401_soTheClientKnowsToReauthenticate() throws Exception {
+        // The bug this guards: an expired JWT used to surface as 403, identical to a
+        // permission denial, so the frontend could not tell it had to sign the user
+        // back in - it just rendered "Failed to load squads" forever.
+        mockMvc.perform(get("/api/persons").header("Authorization", "Bearer " + expiredToken()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void viewerToken_onAdminOnlyWrite_stillReturns403_notAnAuthenticationFailure() throws Exception {
+        // The other half of the split: a VIEWER is authenticated just fine, so hitting
+        // an admin-only write must stay 403 and must NOT sign them out.
+        mockMvc.perform(post("/api/persons")
+                        .header("Authorization", "Bearer " + viewerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Test Person\"}"))
                 .andExpect(status().isForbidden());
+    }
+
+    /** A correctly signed token whose exp claim is already in the past. */
+    private String expiredToken() {
+        SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        long now = System.currentTimeMillis();
+        return Jwts.builder()
+                .subject("admin@test.local")
+                .issuedAt(new Date(now - 7_200_000))
+                .expiration(new Date(now - 3_600_000))
+                .signWith(key)
+                .compact();
     }
 }
