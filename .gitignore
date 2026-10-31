@@ -24,7 +24,6 @@ __pycache__/
 *.mv.db
 *.lock.db
 *.trace.db
-backend-py/squadron.db
 
 # ---- Environment / secrets ----
 .env

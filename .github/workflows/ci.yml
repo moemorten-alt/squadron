@@ -50,8 +50,3 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
-
-  # python-tests: intentionally not added yet - backend-py is not currently
-  # tracked in this git repository (no commit history), so there is nothing
-  # for CI to check out. Add this job once backend-py is committed; see the
-  # squadron testing plan for the intended pytest + pytest-cov setup.
