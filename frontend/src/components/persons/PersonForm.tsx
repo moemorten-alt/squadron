@@ -17,6 +17,7 @@ export default function PersonForm({ initial, onClose, onSaved }: Props) {
 
   const [name, setName] = useState(initial?.name ?? '');
   const [email, setEmail] = useState(initial?.email ?? '');
+  const [leaverDate, setLeaverDate] = useState(initial?.leaverDate ?? '');
   const [adminNote, setAdminNote] = useState(initial?.adminNote ?? '');
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
@@ -47,6 +48,7 @@ export default function PersonForm({ initial, onClose, onSaved }: Props) {
       const payload = {
         name: name.trim(),
         email: email.trim() || undefined,
+        leaverDate: leaverDate || undefined,
         adminNote: adminNote.trim() || undefined,
         tagIds: selectedTagIds,
       };
@@ -99,6 +101,19 @@ export default function PersonForm({ initial, onClose, onSaved }: Props) {
               className="w-full border border-gray-300 dark:border-white/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               placeholder="name@example.com"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white/80 mb-1">Leaver date</label>
+            <input
+              type="date"
+              value={leaverDate}
+              onChange={e => setLeaverDate(e.target.value)}
+              className="w-full border border-gray-300 dark:border-white/15 dark:bg-white/5 dark:text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+            <p className="text-xs text-gray-500 dark:text-white/40 mt-1">
+              Leave empty if they are still here. Future dates are fine.
+            </p>
           </div>
 
           {allTags && allTags.length > 0 && (

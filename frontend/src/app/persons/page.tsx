@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { allocationBadgeClass, cn } from '@/lib/utils';
+import { formatLeaverDate } from '@/lib/formatLeaverDate';
 import type { PersonDto, Tag, Technology, DeveloperRole } from '@/types';
 import { Search, Plus, Check, X, Pencil } from 'lucide-react';
 import PersonForm from '@/components/persons/PersonForm';
@@ -406,6 +407,18 @@ export default function PersonsPage() {
               ))}
             </div>
           );
+        },
+      }),
+
+      col.accessor('leaverDate', {
+        id: 'leaverDate',
+        header: 'Leaver',
+        sortUndefined: 'last',
+        cell: ({ row }) => {
+          const label = formatLeaverDate(row.original.leaverDate);
+          return label
+            ? <span className="text-xs whitespace-nowrap px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 dark:bg-white/10 dark:text-white/60 dark:border-white/15">{label}</span>
+            : <span className="text-xs text-gray-300 dark:text-white/30">—</span>;
         },
       }),
 
