@@ -1,1 +1,40 @@
+# ---- Dependencies ----
 node_modules/
+.venv/
+venv/
+
+# ---- Build output ----
+# All reproducible from source: `npm run build`, `mvn package`.
+# Tracking these causes unmergeable binary conflicts and unbounded repo growth,
+# and risks checking out stale .class files that don't match their .java.
+.next/
+out/
+target/
+dist/
+*.tsbuildinfo
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ---- Local dev databases ----
+# Machine-specific state, not source. A committed H2 lock file also blocks
+# the next startup on another machine.
+*.mv.db
+*.lock.db
+*.trace.db
+backend-py/squadron.db
+
+# ---- Environment / secrets ----
+.env
+.env.*
+!.env.example
+
+# ---- Editor / OS ----
+.DS_Store
+Thumbs.db
+*.swp
+
+# ---- Claude Code local state ----
+.claude/worktrees/
