@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +27,13 @@ public class Person {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    /**
+     * The date this person left (or will leave) the company. Null means still here.
+     * Independent of {@link #active}, which is the soft-delete flag - a leaver stays
+     * active and fully visible.
+     */
+    private LocalDate leaverDate;
 
     @Column(columnDefinition = "TEXT")
     private String adminNote;
