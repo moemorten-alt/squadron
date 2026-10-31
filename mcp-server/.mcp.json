@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "squadron": {
+      "type": "stdio",
+      "command": "C:\\Users\\moemo\\dev\\projects\\squadron\\mcp-server\\.venv\\Scripts\\python",
+      "args": ["C:\\Users\\moemo\\dev\\projects\\squadron\\mcp-server\\server.py"],
+      "env": {
+        "SQUADRON_API_URL": "http://localhost:8080",
+        "SQUADRON_EMAIL": "admin@squadron.local",
+        "SQUADRON_PASSWORD": "admin123"
+      }
+    }
+  }
+}
