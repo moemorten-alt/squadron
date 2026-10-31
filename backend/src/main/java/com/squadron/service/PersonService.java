@@ -54,6 +54,7 @@ public class PersonService {
         Person person = Person.builder()
                 .name(req.name())
                 .email(req.email())
+                .leaverDate(req.leaverDate())
                 .adminNote(req.adminNote())
                 .active(true)
                 .build();
@@ -73,6 +74,7 @@ public class PersonService {
                 .orElseThrow(() -> new ResourceNotFoundException("Person not found: " + id));
         person.setName(req.name());
         person.setEmail(req.email());
+        person.setLeaverDate(req.leaverDate());
         person.setAdminNote(req.adminNote());
 
         if (req.tagIds() != null) {
