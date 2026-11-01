@@ -44,7 +44,6 @@ interface EditDraft {
   email: string;
   adminNote: string;
   tagIds: number[];
-  // preserve fields not shown in the inline editor
   leaverDate?: string;
   allocations: AllocationDraft[];
   removedAllocationIds: number[];
@@ -376,7 +375,26 @@ export default function PersonsPage() {
       header: 'Leaver',
       sortUndefined: 'last',
       cell: ({ row }) => {
-        const label = formatLeaverDate(row.original.leaverDate);
+        const person = row.original;
+        // Editable in place, like Note. Only admins can reach this branch: the
+        // pencil that sets editingId lives in the admin-only actions column, so
+        // the column stays read-only for VIEWERs while remaining visible to them.
+        if (editingId === person.id && editDraft) {
+          return (
+            <input
+              type="date"
+              value={editDraft.leaverDate ?? ''}
+              // Clearing the input must actually clear the stored date, so an
+              // empty string becomes undefined rather than '' - the payload omits
+              // the key and the server nulls the column.
+              onChange={e => setEditDraft(d => d ? { ...d, leaverDate: e.target.value || undefined } : d)}
+              onKeyDown={e => handleKeyDown(e, person.id)}
+              className="w-full min-w-[118px] border border-gray-300 dark:border-white/15 dark:bg-white/5 dark:text-white rounded-md px-1.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              title="Leave empty if they are still here. Future dates are fine."
+            />
+          );
+        }
+        const label = formatLeaverDate(person.leaverDate);
         return label
           ? <span className="text-xs whitespace-nowrap px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 dark:bg-white/10 dark:text-white/60 dark:border-white/15">{label}</span>
           : <span className="text-xs text-gray-300 dark:text-white/30">—</span>;
@@ -585,7 +603,7 @@ export default function PersonsPage() {
         {error && <div className="text-red-600 bg-red-50 dark:bg-red-400/10 border border-red-200 dark:border-red-400/30 rounded-lg p-4">Failed to load people.</div>}
 
         {!isLoading && !error && (
-          <div className="bg-white dark:bg-brand-800 border border-gray-100 dark:border-white/10 rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(43,10,91,0.07)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
+          <div className="bg-white dark:bg-brand-800 border border-gray-100 dark:border-white/10 rounded-xl overflow-x-auto shadow-[0_2px_12px_rgba(43,10,91,0.07)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
             <table className="w-full text-sm">
               <thead>
                 {table.getHeaderGroups().map(hg => (
@@ -598,7 +616,9 @@ export default function PersonsPage() {
                           key={header.id}
                           className={cn(
                             'text-left px-5 py-3 font-medium text-gray-600 dark:text-white/70 select-none',
-                            canSort && 'cursor-pointer hover:text-gray-900 dark:hover:text-white'
+                            canSort && 'cursor-pointer hover:text-gray-900 dark:hover:text-white',
+                            // Pinned alongside its cells - see the td below.
+                            header.column.id === 'actions' && 'sticky right-0 z-20 bg-gray-50 dark:bg-brand-800 shadow-[-6px_0_6px_-6px_rgba(43,10,91,0.15)] dark:shadow-[-6px_0_6px_-6px_rgba(0,0,0,0.5)]'
                           )}
                           onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                         >
@@ -624,11 +644,27 @@ export default function PersonsPage() {
                       key={row.id}
                       className={cn('transition-colors', isEditing ? 'bg-blue-50/40 dark:bg-blue-400/10' : 'hover:bg-gray-50 dark:hover:bg-white/5')}
                     >
-                      {row.getVisibleCells().map(cell => (
-                        <td key={cell.id} className="px-5 py-3.5 align-top">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
+                      {row.getVisibleCells().map(cell => {
+                        // The row controls stay pinned to the right edge. Editing a row
+                        // widens it (the date picker has a large intrinsic minimum), and
+                        // an unpinned Save button ends up outside the visible area.
+                        const isActions = cell.column.id === 'actions';
+                        return (
+                          <td
+                            key={cell.id}
+                            className={cn(
+                              'px-5 py-3.5 align-top',
+                              // Needs an opaque background or the scrolled content shows through.
+                              // The shadow marks it as pinned rather than as content
+                              // that is mysteriously sitting on top of the row.
+                              isActions && 'sticky right-0 z-10 shadow-[-6px_0_6px_-6px_rgba(43,10,91,0.15)] dark:shadow-[-6px_0_6px_-6px_rgba(0,0,0,0.5)]',
+                              isActions && (isEditing ? 'bg-blue-50 dark:bg-brand-800' : 'bg-white dark:bg-brand-800')
+                            )}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        );
+                      })}
                     </tr>
                   );
                 })}
