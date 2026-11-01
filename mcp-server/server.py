@@ -21,7 +21,10 @@ api = ApiClient()
 # ─── HELPERS ──────────────────────────────────────────────────────────────────
 
 def _fmt_alloc(a: dict, show_person: bool = True, show_squad: bool = True) -> str:
-    parts = []
+    # The allocation's own id leads the line. update_allocation and
+    # remove_allocation both take it, and without it there is no way to obtain
+    # one through this server - those tools become unreachable.
+    parts = [f"[alloc {a['id']}]"]
     if show_person:
         parts.append(f"{a['personName']} (id={a['personId']})")
     if show_squad:
@@ -48,10 +51,12 @@ async def list_squads() -> str:
     squads = await api.get("/api/squads")
     if not squads:
         return "No squads found."
-    lines = [f"{'Squad':<35} {'People':>6}  {'Total %':>7}"]
-    lines.append("-" * 52)
+    lines = [f"{'id':>4}  {'Squad':<35} {'People':>6}  {'Total %':>7}"]
+    lines.append("-" * 58)
     for s in squads:
-        lines.append(f"{s['name']:<35} {s['totalHeadcount']:>6}  {s['totalAllocationPercent']:>6}%")
+        lines.append(
+            f"{s['id']:>4}  {s['name']:<35} {s['totalHeadcount']:>6}  {s['totalAllocationPercent']:>6}%"
+        )
     return "\n".join(lines)
 
 
@@ -218,14 +223,28 @@ async def person_allocation_summary() -> str:
 # ─── TOOLS: WRITE (ADMIN) ─────────────────────────────────────────────────────
 
 @mcp.tool()
-async def add_person(name: str, email: str = "", admin_note: str = "", tag_ids: list[int] = []) -> str:
-    """Create a new person. Admin only."""
+async def add_person(
+    name: str,
+    email: str = "",
+    admin_note: str = "",
+    leaver_date: str = "",
+    tag_ids: list[int] = [],
+) -> str:
+    """Create a new person. Admin only.
+
+    leaver_date is an ISO date (YYYY-MM-DD) for when they left or will leave
+    the company; leave it empty if they are still here. Future dates are
+    valid. It records a fact only - it does not remove them from squads or
+    change capacity.
+    """
     try:
         payload: dict = {"name": name}
         if email:
             payload["email"] = email
         if admin_note:
             payload["adminNote"] = admin_note
+        if leaver_date:
+            payload["leaverDate"] = leaver_date
         if tag_ids:
             payload["tagIds"] = tag_ids
         result = await api.post("/api/persons", payload)
@@ -317,6 +336,130 @@ async def update_allocation(
         return (
             f"Updated allocation id={result['id']}: "
             f"{result['personName']} → {result['squadName']} at {result['allocationPercent']}%"
+        )
+    except httpx.HTTPStatusError as e:
+        return f"Error {e.response.status_code}: {e.response.text}"
+
+
+@mcp.tool()
+async def update_person(
+    person_id: int,
+    name: str | None = None,
+    email: str | None = None,
+    admin_note: str | None = None,
+    leaver_date: str | None = None,
+    tag_ids: list[int] | None = None,
+) -> str:
+    """Update a person. Only the arguments you pass are changed. Admin only.
+
+    leaver_date is an ISO date (YYYY-MM-DD); pass an empty string to clear it.
+    """
+    try:
+        # The API's PUT replaces the whole person - any field missing from the
+        # body is set to null. So read the current state and merge, or updating
+        # one field would silently erase the others.
+        current = await api.get(f"/api/persons/{person_id}")
+
+        # PersonDto returns tags as NAMES, not ids, but the PUT body wants
+        # tagIds. Resolve them back through the lookup table, or every update
+        # would silently strip the person's tags.
+        current_tag_ids: list[int] = []
+        if current.get("tags"):
+            all_tags = await api.get("/api/lookup/tags")
+            by_name = {t["name"]: t["id"] for t in all_tags}
+            current_tag_ids = [by_name[n] for n in current["tags"] if n in by_name]
+
+        payload: dict = {
+            "name": current["name"],
+            "email": current.get("email"),
+            "adminNote": current.get("adminNote"),
+            "leaverDate": current.get("leaverDate"),
+            "tagIds": current_tag_ids,
+        }
+        if name is not None:
+            payload["name"] = name
+        if email is not None:
+            payload["email"] = email or None
+        if admin_note is not None:
+            payload["adminNote"] = admin_note or None
+        if leaver_date is not None:
+            payload["leaverDate"] = leaver_date or None
+        if tag_ids is not None:
+            payload["tagIds"] = tag_ids
+
+        result = await api.put(f"/api/persons/{person_id}", payload)
+        return (
+            f"Updated person: {result['name']} (id={result['id']})"
+            f" | leaver date: {result.get('leaverDate') or 'none'}"
+        )
+    except httpx.HTTPStatusError as e:
+        return f"Error {e.response.status_code}: {e.response.text}"
+
+
+@mcp.tool()
+async def remove_person(person_id: int) -> str:
+    """Deactivate a person (soft delete - they stop appearing in listings). Admin only.
+
+    This is reversible in the database but there is no API to undo it, so
+    confirm the id with get_person first.
+    """
+    try:
+        person = await api.get(f"/api/persons/{person_id}")
+        await api.delete(f"/api/persons/{person_id}")
+        return f"Deactivated person: {person['name']} (id={person_id})."
+    except httpx.HTTPStatusError as e:
+        return f"Error {e.response.status_code}: {e.response.text}"
+
+
+@mcp.tool()
+async def update_squad(
+    squad_id: int, name: str | None = None, description: str | None = None
+) -> str:
+    """Update a squad's name or description. Only what you pass is changed. Admin only."""
+    try:
+        # Same whole-object PUT semantics as persons - merge, do not replace.
+        current = await api.get(f"/api/squads/{squad_id}")
+        payload: dict = {
+            "name": current["name"],
+            "description": current.get("description"),
+        }
+        if name is not None:
+            payload["name"] = name
+        if description is not None:
+            payload["description"] = description or None
+
+        result = await api.put(f"/api/squads/{squad_id}", payload)
+        return f"Updated squad: {result['name']} (id={result['id']})"
+    except httpx.HTTPStatusError as e:
+        return f"Error {e.response.status_code}: {e.response.text}"
+
+
+@mcp.tool()
+async def remove_squad(squad_id: int, confirm_name: str) -> str:
+    """PERMANENTLY delete a squad and every allocation in it. Admin only. NOT REVERSIBLE.
+
+    Unlike remove_person, this is a hard delete: the squad row is destroyed and
+    the delete cascades to all of its allocations, which are gone for good. The
+    people themselves are not deleted.
+
+    confirm_name must exactly match the squad's current name. This is a guard
+    against deleting the wrong id - look the squad up first and pass its name
+    back. Ask the user before calling this.
+    """
+    try:
+        squad = await api.get(f"/api/squads/{squad_id}")
+        actual = squad["name"]
+        count = len(squad.get("allocations", []))
+        if confirm_name != actual:
+            return (
+                f"Refusing to delete. confirm_name {confirm_name!r} does not match "
+                f"squad id={squad_id}, which is named {actual!r} and holds {count} "
+                f"allocation(s). Re-run with the exact name if this is really intended."
+            )
+        await api.delete(f"/api/squads/{squad_id}")
+        return (
+            f"Permanently deleted squad {actual!r} (id={squad_id}) and its "
+            f"{count} allocation(s). This cannot be undone."
         )
     except httpx.HTTPStatusError as e:
         return f"Error {e.response.status_code}: {e.response.text}"
