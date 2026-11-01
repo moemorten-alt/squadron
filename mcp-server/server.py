@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import httpx
 from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp.exceptions import ToolError
+from pydantic import BaseModel, Field
 
 from client import ApiClient
 
@@ -12,7 +14,10 @@ mcp = FastMCP(
         "You have access to the Squadron allocation tracker — a system that manages "
         "~77 developers across ~20 squads. Use these tools to query and manage "
         "developer squad allocations. For write operations, you must be authenticated "
-        "as an admin."
+        "as an admin. Allocation lines show their id as [alloc N]. To change "
+        "someone's split, prefer set_person_allocations (one atomic call, with "
+        "dry_run); update_allocation and remove_allocation accept person_id + "
+        "squad instead of an allocation id."
     ),
 )
 api = ApiClient()
@@ -266,79 +271,266 @@ async def add_squad(name: str, description: str = "") -> str:
         return f"Error {e.response.status_code}: {e.response.text}"
 
 
+# ─── ALLOCATION WRITES ────────────────────────────────────────────────────────
+#
+# These return structured data (dicts, surfaced as JSON) rather than prose, so
+# a caller can read allocation_id / squad_id / percent without parsing text.
+# Failures raise ToolError so the client sees a real error, not a string that
+# looks like success.
+
+class SplitItem(BaseModel):
+    """One squad in a person's split."""
+    squad: int | str = Field(description="Squad id, or squad name (case-insensitive; a unique partial name also works).")
+    percent: int = Field(ge=1, le=100, description="Allocation percent for this squad.")
+    role_ids: list[int] | None = Field(default=None, description="Optional. Omit to keep current roles, or for a new squad to copy roles from the person's largest allocation.")
+    technology_ids: list[int] | None = Field(default=None, description="Optional. Same defaulting as role_ids.")
+
+
+def _api_error(e: httpx.HTTPStatusError) -> ToolError:
+    try:
+        msg = e.response.json().get("error") or e.response.text
+    except ValueError:
+        msg = e.response.text
+    return ToolError(f"Squadron API {e.response.status_code}: {msg}")
+
+
+def _alloc_json(a: dict) -> dict:
+    return {
+        "allocation_id": a["id"],
+        "person_id": a["personId"],
+        "person_name": a["personName"],
+        "squad_id": a["squadId"],
+        "squad_name": a["squadName"],
+        "percent": a["allocationPercent"],
+        "roles": a.get("roles", []),
+        "technologies": a.get("technologies", []),
+        "public_comment": a.get("publicComment"),
+        "start_date": a.get("startDate"),
+        "end_date": a.get("endDate"),
+    }
+
+
+async def _resolve_squad_id(squad: int | str) -> int:
+    """Accept a squad id or a name. Exact (case-insensitive) name wins; else a unique substring."""
+    if isinstance(squad, int) or (isinstance(squad, str) and squad.strip().isdigit()):
+        return int(squad)
+    needle = squad.strip().lower()
+    squads = await api.get("/api/squads")
+    exact = [s for s in squads if s["name"].lower() == needle]
+    if len(exact) == 1:
+        return exact[0]["id"]
+    partial = [s for s in squads if needle in s["name"].lower()]
+    if len(partial) == 1:
+        return partial[0]["id"]
+    if not partial:
+        raise ToolError(f"No squad matches {squad!r}. Use list_squads to see names and ids.")
+    names = ", ".join(f"{s['name']} (id={s['id']})" for s in partial)
+    raise ToolError(f"{squad!r} matches several squads: {names}. Pass the squad id.")
+
+
+async def _find_allocation(
+    allocation_id: int | None, person_id: int | None, squad: int | str | None
+) -> dict:
+    """Locate one active allocation, by its id or by person + squad."""
+    all_allocs = await api.get("/api/allocations")
+    if allocation_id is not None:
+        if person_id is not None or squad is not None:
+            raise ToolError("Pass either allocation_id, or person_id + squad - not both.")
+        found = next((a for a in all_allocs if a["id"] == allocation_id), None)
+        if not found:
+            raise ToolError(f"No active allocation with id={allocation_id}.")
+        return found
+    if person_id is None or squad is None:
+        raise ToolError("Identify the allocation with allocation_id, or with person_id + squad.")
+    squad_id = await _resolve_squad_id(squad)
+    matches = [a for a in all_allocs if a["personId"] == person_id and a["squadId"] == squad_id]
+    if not matches:
+        raise ToolError(
+            f"Person id={person_id} has no active allocation in squad id={squad_id}. "
+            "Use add_allocation or set_person_allocations to create one."
+        )
+    if len(matches) > 1:
+        ids = ", ".join(str(a["id"]) for a in matches)
+        raise ToolError(f"Person id={person_id} has several allocations in squad id={squad_id} ({ids}); pass allocation_id.")
+    return matches[0]
+
+
+@mcp.tool()
+async def set_person_allocations(
+    person_id: int, allocations: list[SplitItem], dry_run: bool = False
+) -> dict:
+    """Set a person's WHOLE split in one atomic call. Admin only.
+
+    The best tool for reallocation requests like "Diego: Plan 75%, Resolut 15%,
+    Imagevault 10%". Each listed squad is updated (keeping its dates, notes and
+    allocation id) or created. Any squad the person is in that is NOT listed is
+    removed. All of it happens in one database transaction: if any item is
+    invalid nothing changes.
+
+    Returns before/after splits, a per-squad list of changes
+    (created | updated | removed | unchanged), totals, and warnings (e.g. over
+    100%). Use dry_run=true to preview without saving - recommended when the
+    change removes a squad.
+    """
+    try:
+        items = []
+        for item in allocations:
+            body: dict = {
+                "squadId": await _resolve_squad_id(item.squad),
+                "allocationPercent": item.percent,
+            }
+            if item.role_ids is not None:
+                body["roleIds"] = item.role_ids
+            if item.technology_ids is not None:
+                body["technologyIds"] = item.technology_ids
+            items.append(body)
+        r = await api.put(f"/api/persons/{person_id}/allocations", {"items": items, "dryRun": dry_run})
+    except httpx.HTTPStatusError as e:
+        raise _api_error(e)
+
+    def entry(e: dict) -> dict:
+        return {"allocation_id": e.get("allocationId"), "squad_id": e["squadId"],
+                "squad_name": e["squadName"], "percent": e["allocationPercent"], "roles": e.get("roles", [])}
+
+    return {
+        "dry_run": r["dryRun"],
+        "applied": not r["dryRun"],
+        "person_id": r["personId"],
+        "person_name": r["personName"],
+        "total_before": r["totalBefore"],
+        "total_after": r["totalAfter"],
+        "before": [entry(e) for e in r["before"]],
+        "after": [entry(e) for e in r["after"]],
+        "changes": [
+            {"action": c["action"], "allocation_id": c.get("allocationId"), "squad_id": c["squadId"],
+             "squad_name": c["squadName"], "from_percent": c.get("fromPercent"), "to_percent": c.get("toPercent")}
+            for c in r["changes"]
+        ],
+        "warnings": r["warnings"],
+    }
+
+
 @mcp.tool()
 async def add_allocation(
     person_id: int,
-    squad_id: int,
+    squad: int | str,
     allocation_percent: int,
     role_ids: list[int],
     technology_ids: list[int] = [],
     public_comment: str = "",
     start_date: str = "",
     end_date: str = "",
-) -> str:
-    """Assign a person to a squad. Use list_lookup to get role/technology IDs. Admin only."""
+    dry_run: bool = False,
+) -> dict:
+    """Assign a person to one more squad (squad = id or name). Admin only.
+
+    Use list_lookup for role/technology ids. To change someone's whole split,
+    prefer set_person_allocations. dry_run=true validates and previews only.
+    """
     try:
+        squad_id = await _resolve_squad_id(squad)
         payload: dict = {
             "personId": person_id,
             "squadId": squad_id,
             "allocationPercent": allocation_percent,
             "roleIds": role_ids,
+            "technologyIds": technology_ids,
+            "publicComment": public_comment or None,
+            "startDate": start_date or None,
+            "endDate": end_date or None,
         }
-        if technology_ids:
-            payload["technologyIds"] = technology_ids
-        if public_comment:
-            payload["publicComment"] = public_comment
-        if start_date:
-            payload["startDate"] = start_date
-        if end_date:
-            payload["endDate"] = end_date
+        if dry_run:
+            person = await api.get(f"/api/persons/{person_id}")
+            target = await api.get(f"/api/squads/{squad_id}")
+            existing = [a for a in person.get("allocations", []) if a["squadId"] == squad_id]
+            warnings = []
+            if existing:
+                warnings.append(f"{person['name']} is already in {target['name']} (allocation_id={existing[0]['id']}); "
+                                "use update_allocation instead.")
+            total_after = person.get("totalAllocation", 0) + allocation_percent
+            if total_after > 100:
+                warnings.append(f"{person['name']} would be allocated {total_after}%, over 100%.")
+            return {"dry_run": True, "applied": False, "person_id": person_id, "person_name": person["name"],
+                    "squad_id": squad_id, "squad_name": target["name"], "percent": allocation_percent,
+                    "total_after": total_after, "warnings": warnings}
         result = await api.post("/api/allocations", payload)
-        return (
-            f"Created allocation id={result['id']}: "
-            f"{result['personName']} → {result['squadName']} at {result['allocationPercent']}%"
-        )
+        return {"dry_run": False, "applied": True, "created": _alloc_json(result)}
     except httpx.HTTPStatusError as e:
-        return f"Error {e.response.status_code}: {e.response.text}"
+        raise _api_error(e)
 
 
 @mcp.tool()
 async def update_allocation(
-    allocation_id: int,
+    allocation_id: int | None = None,
+    person_id: int | None = None,
+    squad: int | str | None = None,
     allocation_percent: int | None = None,
     role_ids: list[int] | None = None,
     technology_ids: list[int] | None = None,
     public_comment: str | None = None,
-) -> str:
-    """Update an existing allocation's percent, roles, or technologies. Admin only.
-    Only provide the fields you want to change; others will be kept as-is."""
-    try:
-        all_allocs = await api.get("/api/allocations")
-        current = next((a for a in all_allocs if a["id"] == allocation_id), None)
-        if not current:
-            return f"Allocation id={allocation_id} not found."
+    dry_run: bool = False,
+) -> dict:
+    """Change one allocation. Admin only.
 
-        # Map role/tech names back to IDs for fields not being overridden
+    Identify it EITHER by allocation_id OR by person_id + squad (squad id or
+    name), e.g. update_allocation(person_id=46, squad="Plan", allocation_percent=75).
+    Only the fields you pass change; dates, admin note and everything else are
+    kept. Passing no fields to change is an error. To change several of a
+    person's squads at once, use set_person_allocations instead.
+    """
+    if all(v is None for v in (allocation_percent, role_ids, technology_ids, public_comment)):
+        raise ToolError(
+            "Nothing to update: pass at least one of allocation_percent, role_ids, "
+            "technology_ids, public_comment."
+        )
+    try:
+        current = await _find_allocation(allocation_id, person_id, squad)
+
         lookup_roles = await api.get("/api/lookup/roles")
         lookup_techs = await api.get("/api/lookup/technologies")
         role_name_to_id = {r["name"]: r["id"] for r in lookup_roles}
         tech_name_to_id = {t["name"]: t["id"] for t in lookup_techs}
+        current_role_ids = [role_name_to_id[r] for r in current.get("roles", []) if r in role_name_to_id]
+        current_tech_ids = [tech_name_to_id[t] for t in current.get("technologies", []) if t in tech_name_to_id]
 
+        # The API's PUT replaces the whole allocation: every field must be sent,
+        # including the dates and admin note, or they are silently erased.
         payload = {
             "personId": current["personId"],
             "squadId": current["squadId"],
-            "allocationPercent": allocation_percent if allocation_percent is not None else current["allocationPercent"],
-            "roleIds": role_ids if role_ids is not None else [role_name_to_id[r] for r in current.get("roles", []) if r in role_name_to_id],
-            "technologyIds": technology_ids if technology_ids is not None else [tech_name_to_id[t] for t in current.get("technologies", []) if t in tech_name_to_id],
-            "publicComment": public_comment if public_comment is not None else (current.get("publicComment") or ""),
+            "allocationPercent": current["allocationPercent"] if allocation_percent is None else allocation_percent,
+            "roleIds": current_role_ids if role_ids is None else role_ids,
+            "technologyIds": current_tech_ids if technology_ids is None else technology_ids,
+            "publicComment": current.get("publicComment") if public_comment is None else (public_comment or None),
+            "adminNote": current.get("adminNote"),
+            "startDate": current.get("startDate"),
+            "endDate": current.get("endDate"),
         }
-        result = await api.put(f"/api/allocations/{allocation_id}", payload)
-        return (
-            f"Updated allocation id={result['id']}: "
-            f"{result['personName']} → {result['squadName']} at {result['allocationPercent']}%"
-        )
+
+        changed = []
+        if payload["allocationPercent"] != current["allocationPercent"]:
+            changed.append("percent")
+        if sorted(payload["roleIds"]) != sorted(current_role_ids):
+            changed.append("roles")
+        if sorted(payload["technologyIds"]) != sorted(current_tech_ids):
+            changed.append("technologies")
+        if (payload["publicComment"] or None) != (current.get("publicComment") or None):
+            changed.append("public_comment")
+
+        before = _alloc_json(current)
+        if not changed:
+            return {"dry_run": dry_run, "applied": False, "changed_fields": [],
+                    "message": "Values already match; nothing was written.", "allocation": before}
+        if dry_run:
+            return {"dry_run": True, "applied": False, "changed_fields": changed, "before": before,
+                    "would_set": {"percent": payload["allocationPercent"], "role_ids": payload["roleIds"],
+                                  "technology_ids": payload["technologyIds"],
+                                  "public_comment": payload["publicComment"]}}
+        result = await api.put(f"/api/allocations/{current['id']}", payload)
+        return {"dry_run": False, "applied": True, "changed_fields": changed,
+                "before": before, "after": _alloc_json(result)}
     except httpx.HTTPStatusError as e:
-        return f"Error {e.response.status_code}: {e.response.text}"
+        raise _api_error(e)
 
 
 @mcp.tool()
@@ -466,13 +658,24 @@ async def remove_squad(squad_id: int, confirm_name: str) -> str:
 
 
 @mcp.tool()
-async def remove_allocation(allocation_id: int) -> str:
-    """Remove a person from a squad (soft delete). Admin only."""
+async def remove_allocation(
+    allocation_id: int | None = None,
+    person_id: int | None = None,
+    squad: int | str | None = None,
+    dry_run: bool = False,
+) -> dict:
+    """Remove a person from a squad (soft delete). Admin only.
+
+    Identify the allocation EITHER by allocation_id OR by person_id + squad
+    (id or name). Returns what was removed; dry_run=true previews only.
+    """
     try:
-        await api.delete(f"/api/allocations/{allocation_id}")
-        return f"Removed allocation id={allocation_id}."
+        current = await _find_allocation(allocation_id, person_id, squad)
+        if not dry_run:
+            await api.delete(f"/api/allocations/{current['id']}")
+        return {"dry_run": dry_run, "applied": not dry_run, "removed": _alloc_json(current)}
     except httpx.HTTPStatusError as e:
-        return f"Error {e.response.status_code}: {e.response.text}"
+        raise _api_error(e)
 
 
 # ─── RESOURCES ────────────────────────────────────────────────────────────────
