@@ -65,4 +65,4 @@ Standard layering: `controller/` -> `service/` -> `repository/` -> `entity/`, wi
 
 ## CI
 
-`.github/workflows/ci.yml` runs `mvn test` (backend) and `npm test` (frontend) on push/PR to `main`. A Python backend migration is in progress in local development but is not yet tracked in this git repository, so there is no corresponding CI job for it.
+`.github/workflows/ci.yml` runs `mvn test` (backend) and `npm test` (frontend) on push/PR to `main`. The Java backend is the only backend; the earlier Python/FastAPI backend was removed and is preserved on the `archive/python-backend` branch.
